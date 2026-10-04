@@ -4,8 +4,12 @@ import { Logo } from "./Logo";
 import { ThemeToggle } from "./ThemeToggle";
 import { UserMenu } from "./UserMenu";
 
+interface AppHeaderProps {
+  user: { name: string; email: string };
+}
+
 /** Global header for authenticated screens (FR-GLB-01). */
-export const AppHeader = () => (
+export const AppHeader = ({ user }: AppHeaderProps) => (
   <header className="glass sticky top-0 z-40 border-x-0 border-t-0">
     <div className="mx-auto flex h-14 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6">
       <Logo href="/dashboard" compact />
@@ -18,7 +22,7 @@ export const AppHeader = () => (
           EN
         </span>
         <ThemeToggle />
-        <UserMenu />
+        <UserMenu user={user} />
       </div>
     </div>
   </header>

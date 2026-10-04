@@ -14,7 +14,7 @@ Procedural workflows (design-to-code, form building, migrations, reviews) live i
 - Better Auth for authentication/session management
 - Prisma + PostgreSQL — accessed only from the server (Server Actions / server-only modules)
 - Tailwind CSS + shadcn/ui
-- Package manager: [pnpm/npm — fill in]
+- Package manager: npm
 
 ## Folder Structure
 

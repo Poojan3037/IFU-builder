@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input";
 
 import type { SignupInput } from "../schema";
 import { AuthField } from "./AuthField";
-import { CheckEmailPanel } from "./CheckEmailPanel";
+import { AuthNotice } from "./AuthNotice";
 import { GoogleButton } from "./GoogleButton";
 import { OrDivider } from "./OrDivider";
 import { PasswordInput } from "./PasswordInput";
@@ -20,22 +20,11 @@ import { SubmitButton } from "./SubmitButton";
 interface SignupFormPresentationProps {
   form: UseFormReturn<SignupInput>;
   onSubmit: FormEventHandler<HTMLFormElement>;
-  sentTo: string | null;
-  onReset: () => void;
 }
 
-export const SignupFormPresentation = ({ form, onSubmit, sentTo, onReset }: SignupFormPresentationProps) => {
+export const SignupFormPresentation = ({ form, onSubmit }: SignupFormPresentationProps) => {
   const { register, control, watch, formState } = form;
   const { errors, isSubmitting } = formState;
-
-  if (sentTo) {
-    return (
-      <CheckEmailPanel title="Check your email" onBack={onReset}>
-        We sent a verification link to <span className="font-medium text-foreground">{sentTo}</span>. You can log in now,
-        but you&apos;ll need to verify before exporting a PDF.
-      </CheckEmailPanel>
-    );
-  }
 
   const describedBy = (name: keyof SignupInput) => (errors[name] ? `${name}-error` : undefined);
 
@@ -44,6 +33,7 @@ export const SignupFormPresentation = ({ form, onSubmit, sentTo, onReset }: Sign
       <GoogleButton label="Sign up with Google" />
       <OrDivider />
       <form onSubmit={onSubmit} noValidate className="space-y-5">
+        {errors.root && <AuthNotice tone="danger" title={errors.root.message ?? ""} />}
         <FieldGroup className="gap-4">
           <AuthField id="fullName" label="Full name" error={errors.fullName}>
             <Input id="fullName" autoComplete="name" placeholder="Ananya Rao" className="h-10" aria-invalid={!!errors.fullName} aria-describedby={describedBy("fullName")} {...register("fullName")} />

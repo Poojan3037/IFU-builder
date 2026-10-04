@@ -5,28 +5,27 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 
-import { FAKE_LATENCY_MS, wait } from "../constants";
+import { signInEmailAction } from "../actions";
+import { safeNext } from "../redirect";
 import { loginSchema, type LoginInput } from "../schema";
-
-/** Demo-only: this password simulates FR-AUTH-01's generic failure message. */
-const DEMO_WRONG_PASSWORD = "wrong";
 
 export const useLoginForm = () => {
   const router = useRouter();
-  const next = useSearchParams().get("next") ?? "/dashboard";
+  const next = safeNext(useSearchParams().get("next"));
   const form = useForm<LoginInput>({
     resolver: zodResolver(loginSchema),
     defaultValues: { email: "", password: "", rememberMe: true },
   });
 
   const onSubmit = form.handleSubmit(async (values) => {
-    await wait(FAKE_LATENCY_MS);
-    if (values.password === DEMO_WRONG_PASSWORD) {
-      form.setError("root", { message: "Email or password is incorrect." });
+    const result = await signInEmailAction(values);
+    if (!result.success) {
+      form.setError("root", { message: result.error });
       return;
     }
     toast.success("Welcome back!");
-    router.push(next.startsWith("/") ? next : "/dashboard");
+    router.push(next);
+    router.refresh();
   });
 
   return { form, onSubmit };
