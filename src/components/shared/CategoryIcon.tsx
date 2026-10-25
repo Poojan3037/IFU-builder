@@ -1,14 +1,16 @@
+import { FileText } from "lucide-react";
+
 import { CATEGORY_META } from "@/features/ifu-wizard/constants";
 import type { DeviceCategory } from "@/features/ifu-wizard/types";
 import { cn } from "@/lib/utils";
 
 interface CategoryIconProps {
-  category: DeviceCategory;
+  category: DeviceCategory | null;
   className?: string;
 }
 
 export const CategoryIcon = ({ category, className }: CategoryIconProps) => {
-  const Icon = CATEGORY_META[category].icon;
+  const Icon = category ? CATEGORY_META[category].icon : FileText;
   return (
     <span
       aria-hidden

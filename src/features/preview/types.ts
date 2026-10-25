@@ -4,8 +4,10 @@ export type PreviewViewMode = "document" | "print";
 export type PreviewMode = "edit" | "view";
 
 export interface PreviewBlock {
+  /** Empty on the continuation of a block that was split across pages. */
   label: string;
-  text: string;
+  /** Sanitised HTML (allow-listed marks only, see `sanitiseRichText`). */
+  html: string;
 }
 
 export interface PreviewSection {
@@ -13,6 +15,8 @@ export interface PreviewSection {
   key: SectionKey;
   title: string;
   blocks: PreviewBlock[];
+  /** True when this fragment continues a section that started on an earlier page. */
+  continued?: boolean;
 }
 
 export interface PreviewPage {

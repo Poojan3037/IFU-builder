@@ -20,7 +20,7 @@ export const useLoginForm = () => {
   const onSubmit = form.handleSubmit(async (values) => {
     const result = await signInEmailAction(values);
     if (!result.success) {
-      form.setError("root", { message: result.error });
+      form.setError("root", { message: result.error.message });
       return;
     }
     toast.success("Welcome back!");

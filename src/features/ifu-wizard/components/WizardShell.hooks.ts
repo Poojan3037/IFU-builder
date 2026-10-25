@@ -1,7 +1,9 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+
+import { formatRelative } from "@/lib/dates";
 
 import { WIZARD_STEPS } from "../constants";
 
@@ -26,4 +28,17 @@ export const useWizardStep = () => {
   }
 
   return { stepIndex, direction: tracked.direction, pathname };
+};
+
+/** "Saved · just now", refreshed every 30 s; null until the first save in this session. */
+export const useSavedLabel = (savedAt: string | null) => {
+  const [now, setNow] = useState(() => new Date());
+
+  useEffect(() => {
+    if (!savedAt) return;
+    const id = setInterval(() => setNow(new Date()), 30_000);
+    return () => clearInterval(id);
+  }, [savedAt]);
+
+  return savedAt ? `Saved · ${formatRelative(savedAt, now)}` : undefined;
 };

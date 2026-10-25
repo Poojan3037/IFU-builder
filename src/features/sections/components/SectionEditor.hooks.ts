@@ -1,39 +1,19 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { toast } from "sonner";
 
 import type { SectionKey } from "@/features/ifu-wizard/types";
 
+import { markSectionCompleteAction } from "../actions";
 import { SECTION_CATALOGUE } from "../catalogue";
-import { buildSectionContentSchema, type StructuredValues } from "../schema";
-import type { StructuredErrors } from "./StructuredFields";
+import { buildSectionContentSchema } from "../schema";
+import { validateStructured, type StructuredErrors } from "../structured";
 import { useSectionsStore } from "./SectionsStore.context";
-import { useApplicableSections } from "./SectionsWorkspace.hooks";
-
-/** Fake debounced autosave (FR-S3-08): flips to "saving" on edit, then "saved". */
-export const useAutosaveStatus = () => {
-  const [state, setState] = useState<"saving" | "saved">("saved");
-  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  // Clear a pending fake save when the editor unmounts.
-  useEffect(() => () => {
-    if (timer.current) clearTimeout(timer.current);
-  }, []);
-
-  const markDirty = () => {
-    setState("saving");
-    if (timer.current) clearTimeout(timer.current);
-    timer.current = setTimeout(() => setState("saved"), 900);
-  };
-
-  return { state, markDirty };
-};
 
 /** Previous section and the next destination after "Mark Complete" (FR-S3-06). */
-export const useSectionNeighbours = (documentId: string, sectionKey: SectionKey) => {
-  const applicable = useApplicableSections();
+export const useSectionNeighbours = (documentId: string, sectionKey: SectionKey, applicable: SectionKey[]) => {
   const { complete } = useSectionsStore();
   const index = applicable.indexOf(sectionKey);
   const previous = index > 0 ? applicable[index - 1] : null;
@@ -47,27 +27,43 @@ export const useSectionNeighbours = (documentId: string, sectionKey: SectionKey)
   };
 };
 
-const validateStructured = (sectionKey: SectionKey, values: StructuredValues): StructuredErrors => {
-  const errors: StructuredErrors = {};
-  const kinds = SECTION_CATALOGUE[sectionKey].structured ?? [];
-  if (kinds.includes("storage")) {
-    if (values.tempMin === null) errors.tempMin = "Enter a minimum temperature";
-    if (values.tempMax === null) errors.tempMax = "Enter a maximum temperature";
-    if (values.tempMin !== null && values.tempMax !== null && values.tempMin > values.tempMax)
-      errors.tempMax = "Must be at least the minimum";
-  }
-  if (kinds.includes("shelfLife") && values.shelfLifeMonths === null) errors.shelfLifeMonths = "Enter the shelf life";
-  if (kinds.includes("sterilisation") && !values.sterilisationMethod) errors.sterilisationMethod = "Choose a sterilisation method";
-  return errors;
+/** Arriving from a compliance deep link focuses the field (rich-text or structured) it points at (FR-CMP-04). */
+export const useFocusField = (focusField?: string) => {
+  // Runs once on arrival; the editors mount in the same commit, so the element exists by now.
+  useEffect(() => {
+    if (!focusField) return;
+    const frame = requestAnimationFrame(() => {
+      const target = document.getElementById(`field-${focusField}`) ?? document.getElementById(`structured-${focusField}`);
+      target?.focus();
+      target?.scrollIntoView({ block: "center", behavior: "smooth" });
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [focusField]);
 };
 
-/** Validates minimum content, marks the section complete and moves on. */
-export const useSectionCompletion = (sectionKey: SectionKey, nextHref: string) => {
+interface UseSectionCompletionOptions {
+  documentId: string;
+  sectionKey: SectionKey;
+  nextHref: string;
+  onSaved: () => void;
+}
+
+/** Validates minimum content, saves + marks the section complete on the server, then moves on. */
+export const useSectionCompletion = ({ documentId, sectionKey, nextHref, onSaved }: UseSectionCompletionOptions) => {
   const router = useRouter();
   const { fields, structured, setComplete } = useSectionsStore();
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [structuredErrors, setStructuredErrors] = useState<StructuredErrors>({});
   const [isBursting, setIsBursting] = useState(false);
+  const [isPending, startTransition] = useTransition();
+
+  const showErrors = (nextFieldErrors: Record<string, string>, nextStructuredErrors: StructuredErrors) => {
+    setFieldErrors(nextFieldErrors);
+    setStructuredErrors(nextStructuredErrors);
+    toast.error("A few fields need more detail before this section is complete.");
+    const firstInvalid = Object.keys(nextFieldErrors)[0];
+    if (firstInvalid) document.getElementById(`field-${firstInvalid}`)?.focus();
+  };
 
   const complete = () => {
     const def = SECTION_CATALOGUE[sectionKey];
@@ -75,26 +71,41 @@ export const useSectionCompletion = (sectionKey: SectionKey, nextHref: string) =
     const result = buildSectionContentSchema(def.fields).safeParse(values);
     const nextFieldErrors: Record<string, string> = {};
     if (!result.success) {
-      for (const issue of result.error.issues) {
-        const key = String(issue.path[0]);
-        nextFieldErrors[key] ??= issue.message;
-      }
+      for (const issue of result.error.issues) nextFieldErrors[String(issue.path[0])] ??= issue.message;
     }
-    const nextStructuredErrors = validateStructured(sectionKey, structured);
-    setFieldErrors(nextFieldErrors);
-    setStructuredErrors(nextStructuredErrors);
+    const nextStructuredErrors = validateStructured(def.structured, structured);
 
-    const firstInvalid = Object.keys(nextFieldErrors)[0];
-    if (firstInvalid || Object.keys(nextStructuredErrors).length > 0) {
-      toast.error("A few fields need more detail before this section is complete.");
-      if (firstInvalid) document.getElementById(`field-${firstInvalid}`)?.focus();
+    if (Object.keys(nextFieldErrors).length > 0 || Object.keys(nextStructuredErrors).length > 0) {
+      showErrors(nextFieldErrors, nextStructuredErrors);
       return;
     }
+    setFieldErrors({});
+    setStructuredErrors({});
 
-    setComplete(sectionKey, true);
-    setIsBursting(true);
-    toast.success(`${def.title} marked complete`);
-    setTimeout(() => router.push(nextHref), 650);
+    startTransition(async () => {
+      const response = await markSectionCompleteAction({ documentId, sectionKey, fields: fields[sectionKey] ?? {}, structured }).catch(
+        () => null,
+      );
+      if (!response?.success) {
+        // The server re-validates; surface its per-field messages the same way as the client's.
+        const serverErrors = response?.error.fieldErrors ?? {};
+        const serverFieldErrors: Record<string, string> = {};
+        const serverStructured: StructuredErrors = {};
+        for (const [key, messages] of Object.entries(serverErrors)) {
+          if (def.fields.some((f) => f.key === key)) serverFieldErrors[key] = messages[0];
+          else serverStructured[key as keyof StructuredErrors] = messages[0];
+        }
+        if (Object.keys(serverErrors).length > 0) showErrors(serverFieldErrors, serverStructured);
+        else toast.error(response?.error.message ?? "Couldn't save this section. Please try again.");
+        return;
+      }
+
+      setComplete(sectionKey, true);
+      onSaved();
+      setIsBursting(true);
+      toast.success(`${def.title} marked complete`);
+      setTimeout(() => router.push(nextHref), 650);
+    });
   };
 
   const clearFieldError = (key: string) =>
@@ -105,5 +116,5 @@ export const useSectionCompletion = (sectionKey: SectionKey, nextHref: string) =
       return next;
     });
 
-  return { fieldErrors, structuredErrors, isBursting, complete, clearFieldError };
+  return { fieldErrors, structuredErrors, isBursting, isSaving: isPending, complete, clearFieldError };
 };

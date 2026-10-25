@@ -4,33 +4,34 @@ import { APIError } from "better-auth/api";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
+import { type ActionResult, fail, fromZodError, ok } from "@/lib/action-result";
 import { auth } from "@/lib/auth";
+import { t } from "@/lib/i18n";
 
 import { safeNext } from "./redirect";
 import { loginSchema, signupSchema } from "./schema";
-import type { ActionResult } from "./types";
 
-const LOGIN_ERROR = "Email or password is incorrect.";
+const LOGIN_ERROR = t("auth.loginFailed");
 
 export const signInEmailAction = async (input: unknown): Promise<ActionResult> => {
   const parsed = loginSchema.safeParse(input);
-  if (!parsed.success) return { success: false, error: LOGIN_ERROR };
+  if (!parsed.success) return fail("UNAUTHENTICATED", LOGIN_ERROR);
 
   try {
     await auth.api.signInEmail({
       body: { email: parsed.data.email, password: parsed.data.password, rememberMe: parsed.data.rememberMe },
       headers: await headers(),
     });
-    return { success: true, data: null };
+    return ok(null);
   } catch (error) {
-    if (error instanceof APIError) return { success: false, error: LOGIN_ERROR };
-    return { success: false, error: "Something went wrong. Please try again." };
+    if (error instanceof APIError) return fail("UNAUTHENTICATED", LOGIN_ERROR);
+    return fail("INTERNAL", t("errors.generic"));
   }
 };
 
 export const signUpEmailAction = async (input: unknown): Promise<ActionResult> => {
   const parsed = signupSchema.safeParse(input);
-  if (!parsed.success) return { success: false, error: parsed.error.issues[0]?.message ?? "Invalid input" };
+  if (!parsed.success) return fromZodError(parsed.error, parsed.error.issues[0]?.message);
 
   try {
     await auth.api.signUpEmail({
@@ -42,12 +43,12 @@ export const signUpEmailAction = async (input: unknown): Promise<ActionResult> =
       },
       headers: await headers(),
     });
-    return { success: true, data: null };
+    return ok(null);
   } catch (error) {
     if (error instanceof APIError) {
-      return { success: false, error: "We couldn't create that account. Try logging in instead." };
+      return fail("VALIDATION", t("auth.signupFailed"));
     }
-    return { success: false, error: "Something went wrong. Please try again." };
+    return fail("INTERNAL", t("errors.generic"));
   }
 };
 
@@ -60,9 +61,9 @@ export const signInGoogleAction = async (next?: string): Promise<ActionResult> =
     });
     url = response.url;
   } catch {
-    return { success: false, error: "Google sign-in is unavailable right now." };
+    return fail("INTERNAL", "Google sign-in is unavailable right now.");
   }
-  if (!url) return { success: false, error: "Google sign-in is unavailable right now." };
+  if (!url) return fail("INTERNAL", "Google sign-in is unavailable right now.");
   redirect(url);
 };
 

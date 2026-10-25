@@ -11,9 +11,8 @@ import { cn } from "@/lib/utils";
 
 import { STERILISATION_METHODS } from "../constants";
 import type { StructuredValues } from "../schema";
+import type { StructuredErrors } from "../structured";
 import type { SectionStructuredKind } from "../types";
-
-export type StructuredErrors = Partial<Record<keyof StructuredValues, string>>;
 
 interface StructuredFieldsProps {
   kinds: SectionStructuredKind[];
@@ -94,9 +93,9 @@ export const StructuredFields = ({ kinds, values, errors, onChange }: Structured
     {kinds.includes("sterilisation") && (
       <Group title="Sterilisation method">
         <div className="flex max-w-sm flex-col gap-1.5">
-          <Label htmlFor="structured-method">Method</Label>
+          <Label htmlFor="structured-sterilisationMethod">Method</Label>
           <Select value={values.sterilisationMethod ?? undefined} onValueChange={(value) => onChange({ sterilisationMethod: value })}>
-            <SelectTrigger id="structured-method" aria-invalid={Boolean(errors.sterilisationMethod)} className="h-10 w-full">
+            <SelectTrigger id="structured-sterilisationMethod" aria-invalid={Boolean(errors.sterilisationMethod)} className="h-10 w-full">
               <SelectValue placeholder="Select a method" />
             </SelectTrigger>
             <SelectContent>

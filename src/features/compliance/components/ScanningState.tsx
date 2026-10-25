@@ -3,7 +3,7 @@
 import { motion } from "motion/react";
 import { ScanSearch } from "lucide-react";
 
-import { SCAN_DURATION_MS } from "../constants";
+import { MIN_SCAN_DISPLAY_MS } from "../constants";
 
 const STEPS = ["Checking required sections", "Matching mandatory statements", "Verifying licence details"];
 
@@ -36,7 +36,7 @@ export const ScanningState = () => (
         className="h-full rounded-full bg-[linear-gradient(90deg,var(--primary),var(--info),var(--primary))] bg-[length:200%_100%] animate-shimmer"
         initial={{ width: "0%" }}
         animate={{ width: "100%" }}
-        transition={{ duration: SCAN_DURATION_MS / 1000, ease: "easeInOut" }}
+        transition={{ duration: MIN_SCAN_DISPLAY_MS / 1000, ease: "easeInOut" }}
       />
     </div>
     <ul className="flex flex-col gap-1.5 text-xs text-muted-foreground">

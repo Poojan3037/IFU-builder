@@ -1,18 +1,18 @@
 "use client";
 
-import type { RiskClass } from "../types";
-import type { DeviceProfile } from "../types";
+import type { DeviceProfile, RiskClass, SectionKey } from "../types";
 import { useCategoryRiskActions, useCategoryRiskDerived, useCategoryRiskForm } from "./CategoryRiskForm.hooks";
 import { CategoryRiskFormPresentation } from "./CategoryRiskForm.presentation";
 
 interface CategoryRiskFormContainerProps {
   documentId: string;
   profile: DeviceProfile;
+  sectionsWithContent: SectionKey[];
 }
 
-export const CategoryRiskFormContainer = ({ documentId, profile }: CategoryRiskFormContainerProps) => {
+export const CategoryRiskFormContainer = ({ documentId, profile, sectionsWithContent }: CategoryRiskFormContainerProps) => {
   const { form, handleCategoryChange, applyRiskClass } = useCategoryRiskForm(profile);
-  const derived = useCategoryRiskDerived(form, profile);
+  const derived = useCategoryRiskDerived(form, profile, sectionsWithContent);
   const actions = useCategoryRiskActions(form, documentId);
 
   const handleApplySuggestion = (riskClass: RiskClass) => {

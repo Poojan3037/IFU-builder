@@ -19,7 +19,7 @@ export const useSignupForm = () => {
   const onSubmit = form.handleSubmit(async (values) => {
     const result = await signUpEmailAction(values);
     if (!result.success) {
-      form.setError("root", { message: result.error });
+      form.setError("root", { message: result.error.message });
       return;
     }
     toast.success("Account created");

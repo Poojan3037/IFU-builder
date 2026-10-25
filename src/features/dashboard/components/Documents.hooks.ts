@@ -1,26 +1,27 @@
 "use client";
 
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { useRef, useState } from "react";
+import { useRef, useState, useTransition } from "react";
 import { toast } from "sonner";
 
-import type { IfuDocumentSummary } from "@/features/ifu-wizard/types";
-import { MOCK_NOW } from "@/features/ifu-wizard/mock-data";
-
+import { deleteDocumentAction } from "../actions";
 import { SEARCH_DEBOUNCE_MS } from "../constants";
-import type { DocumentFilters } from "../types";
+import type { DashboardDocument, DocumentFilters } from "../types";
 import { parseFilters } from "../utils";
 
 type FilterPatch = Partial<Record<keyof DocumentFilters, string | number | null>>;
 
-/** URL-backed filters (FR-DASH-03/04) with a debounced search box. */
+/** URL-backed filters (FR-DASH-03/04); the server page re-renders on every change. */
 export const useDocumentFilters = () => {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const [isPending, startTransition] = useTransition();
   const filters = parseFilters(new URLSearchParams(searchParams.toString()));
   const [search, setSearch] = useState(filters.q);
   const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+
+  const navigate = (href: string) => startTransition(() => router.replace(href, { scroll: false }));
 
   const updateParams = (patch: FilterPatch) => {
     const params = new URLSearchParams(window.location.search);
@@ -30,19 +31,19 @@ export const useDocumentFilters = () => {
     });
     if (!("page" in patch)) params.delete("page");
     const query = params.toString();
-    router.replace(query ? `${pathname}?${query}` : pathname, { scroll: false });
+    navigate(query ? `${pathname}?${query}` : pathname);
   };
 
   const onSearchChange = (value: string) => {
     setSearch(value);
     clearTimeout(timer.current);
-    timer.current = setTimeout(() => updateParams({ q: value }), SEARCH_DEBOUNCE_MS);
+    timer.current = setTimeout(() => updateParams({ q: value.trim() }), SEARCH_DEBOUNCE_MS);
   };
 
   const clearFilters = () => {
     clearTimeout(timer.current);
     setSearch("");
-    router.replace(pathname, { scroll: false });
+    navigate(pathname);
   };
 
   const hasActiveFilters = Boolean(filters.q) || filters.status !== "ALL" || filters.risk !== "ALL";
@@ -50,6 +51,7 @@ export const useDocumentFilters = () => {
   return {
     filters,
     search,
+    isPending,
     hasActiveFilters,
     onSearchChange,
     onStatusChange: (status: string) => updateParams({ status }),
@@ -59,31 +61,20 @@ export const useDocumentFilters = () => {
   };
 };
 
-/** Local, in-memory document list so Duplicate/Delete feel real in the static build. */
-export const useDocumentList = (initial: IfuDocumentSummary[]) => {
-  const [documents, setDocuments] = useState(initial);
+export const useDeleteDocument = () => {
+  const router = useRouter();
+  const [isDeleting, startTransition] = useTransition();
 
-  const duplicate = (doc: IfuDocumentSummary) => {
-    const copy: IfuDocumentSummary = {
-      ...doc,
-      id: `${doc.id}-copy-${documents.length}`,
-      deviceName: `${doc.deviceName} (copy)`,
-      status: "DRAFT",
-      version: "v1.0",
-      lastStep: "BASIC_INFO",
-      updatedAt: MOCK_NOW.toISOString(),
-    };
-    setDocuments((current) => [copy, ...current]);
-    toast.success("Document duplicated", { description: copy.deviceName });
-  };
-
-  const remove = (doc: IfuDocumentSummary) => {
-    setDocuments((current) => current.filter((item) => item.id !== doc.id));
-    toast.success("Document deleted", {
-      description: "You can ask support to restore it within 30 days.",
-      action: { label: "Undo", onClick: () => setDocuments((current) => [doc, ...current]) },
+  const remove = (doc: DashboardDocument) =>
+    startTransition(async () => {
+      const result = await deleteDocumentAction({ id: doc.id });
+      if (!result.success) {
+        toast.error(result.error.message);
+        return;
+      }
+      toast.success("Document deleted", { description: "Support can restore it within 30 days." });
+      router.refresh();
     });
-  };
 
-  return { documents, duplicate, remove };
+  return { remove, isDeleting };
 };

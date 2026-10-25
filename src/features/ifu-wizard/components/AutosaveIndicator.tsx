@@ -1,10 +1,10 @@
 "use client";
 
 import { AnimatePresence, motion } from "motion/react";
-import { CloudCheck, Loader2 } from "lucide-react";
+import { CloudAlert, CloudCheck, Loader2 } from "lucide-react";
 
-interface AutosaveIndicatorProps {
-  state?: "saving" | "saved";
+export interface AutosaveIndicatorProps {
+  state?: "idle" | "saving" | "saved" | "error";
   label?: string;
 }
 
@@ -23,7 +23,11 @@ export const AutosaveIndicator = ({ state = "saved", label = "Saved · just now"
           <>
             <Loader2 aria-hidden className="size-3.5 animate-spin" /> Saving…
           </>
-        ) : (
+        ) : state === "error" ? (
+          <>
+            <CloudAlert aria-hidden className="size-3.5 text-destructive" /> Couldn&apos;t save — will retry
+          </>
+        ) : state === "idle" ? null : (
           <>
             <CloudCheck aria-hidden className="size-3.5 text-success" /> {label}
           </>

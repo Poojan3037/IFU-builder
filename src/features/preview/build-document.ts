@@ -1,80 +1,148 @@
 import { LICENCE_TYPE_META } from "@/features/ifu-wizard/constants";
-import { getApplicableSections } from "@/features/ifu-wizard/rules/applicability";
-import type { IfuDocument, SectionKey } from "@/features/ifu-wizard/types";
+import type { LicenceType, ManufacturerType, SectionKey } from "@/features/ifu-wizard/types";
 import { SECTION_CATALOGUE } from "@/features/sections/catalogue";
-import { MOCK_SECTION_CONTENT, MOCK_STRUCTURED } from "@/features/sections/mock-data";
+import type { StructuredValues } from "@/features/sections/schema";
+import { renderStructuredText } from "@/features/sections/structured";
+import type { SectionContentMap } from "@/features/sections/stored";
+import { htmlToPlainText, isHtmlEmpty, textToHtml } from "@/features/sections/text";
 import { formatDate } from "@/lib/dates";
 
-import { PREVIEW_FALLBACK_CONTENT, STERILISATION_METHOD_LABELS } from "./mock-data";
+import { BLOCK_WEIGHT, HEADING_WEIGHT, PAGE_CAPACITY } from "./constants";
 import type { PreviewBlock, PreviewMeta, PreviewPage, PreviewSection } from "./types";
 
-const fieldText = (key: SectionKey, fieldKey: string): string =>
-  MOCK_SECTION_CONTENT[key]?.fields[fieldKey]?.trim() || PREVIEW_FALLBACK_CONTENT[key]?.[fieldKey] || "";
+/** Everything the document template needs. The PDF template (Phase 2) consumes the same shape. */
+export interface DocumentSource {
+  deviceName: string;
+  modelNumber: string;
+  version: string;
+  issueDate: string | Date;
+  manufacturerType: ManufacturerType;
+  manufacturerName: string;
+  manufacturerAddress: string;
+  manufacturerState: string;
+  manufacturerPin: string;
+  manufacturerCountry: string;
+  licenceType: LicenceType;
+  licenceNumber: string;
+  importerName: string;
+  importerAddress: string;
+  importerState: string;
+  importerPin: string;
+  customerCarePhone: string;
+  customerCareEmail: string;
+  applicable: SectionKey[];
+  content: SectionContentMap;
+  structured: StructuredValues;
+}
 
-const manufacturerBlocks = (doc: IfuDocument): PreviewBlock[] => {
-  const address = [doc.manufacturerAddress, doc.manufacturerState, doc.manufacturerPin, doc.manufacturerCountry]
-    .filter(Boolean)
-    .join(", ");
+const joinAddress = (...parts: string[]) => parts.filter(Boolean).join(", ");
+
+const manufacturerBlocks = (doc: DocumentSource): PreviewBlock[] => {
+  const state = [doc.manufacturerState, doc.manufacturerPin].filter(Boolean).join(" ");
   const blocks: PreviewBlock[] = [
-    { label: "Manufacturer", text: `${doc.manufacturerName}\n${address}` },
+    { label: "Manufacturer", text: `${doc.manufacturerName}\n${joinAddress(doc.manufacturerAddress, state, doc.manufacturerCountry)}` },
     { label: LICENCE_TYPE_META[doc.licenceType].numberLabel, text: doc.licenceNumber || "—" },
     { label: "Customer care", text: [doc.customerCarePhone, doc.customerCareEmail].filter(Boolean).join(" · ") },
-  ];
+  ].map(({ label, text }) => ({ label, html: textToHtml(text) }));
+
   if (doc.manufacturerType === "IMPORTER") {
-    blocks.splice(1, 0, { label: "Importer", text: `${doc.importerName}\n${doc.importerAddress}` });
+    const importerState = [doc.importerState, doc.importerPin].filter(Boolean).join(" ");
+    blocks.splice(1, 0, {
+      label: "Importer",
+      html: textToHtml(`${doc.importerName}\n${joinAddress(doc.importerAddress, importerState, "India")}`),
+    });
   }
   return blocks;
 };
 
-/** Structured values (FR-S3-05) render into the IFU text automatically. */
-const structuredBlocks = (key: SectionKey): PreviewBlock[] => {
-  if (key === "sterilisation") {
-    const method = STERILISATION_METHOD_LABELS[MOCK_STRUCTURED.sterilisationMethod] ?? "a validated method";
-    return [{ label: "Sterilisation method", text: `Sterilised using ${method}.` }];
-  }
-  if (key === "storage") {
-    const { tempMin, tempMax, humidity, lightSensitive } = MOCK_STRUCTURED.storage;
-    return [
-      {
-        label: "Storage conditions",
-        text: `Store between ${tempMin} °C and ${tempMax} °C. Relative humidity not exceeding ${humidity}%.${lightSensitive ? " Protect from light." : ""}`,
-      },
-      { label: "Shelf life", text: `${MOCK_STRUCTURED.shelfLifeMonths} months from the date of manufacture. Do not use after the use-by date.` },
-    ];
-  }
-  return [];
-};
-
-const sectionBlocks = (doc: IfuDocument, key: SectionKey): PreviewBlock[] => {
+const sectionBlocks = (doc: DocumentSource, key: SectionKey): PreviewBlock[] => {
   if (key === "manufacturer_licence") return manufacturerBlocks(doc);
-  const written = SECTION_CATALOGUE[key].fields
-    .map((field) => ({ label: field.label, text: fieldText(key, field.key) }))
-    .filter((block) => block.text.length > 0);
-  return [...structuredBlocks(key), ...written];
+  const definition = SECTION_CATALOGUE[key];
+  const structured = renderStructuredText(definition.structured, doc.structured).map(({ label, text }) => ({
+    label,
+    html: textToHtml(text),
+  }));
+  const written = definition.fields
+    .map((field) => ({ label: field.label, html: doc.content[key]?.fields[field.key] ?? "" }))
+    .filter((block) => !isHtmlEmpty(block.html));
+  return [...structured, ...written];
 };
 
 /** Same section order and numbering the PDF template uses (FR-PRV-01). */
-export const buildPreviewSections = (doc: IfuDocument): PreviewSection[] =>
-  getApplicableSections(doc.profile).map((key, index) => ({
+export const buildPreviewSections = (doc: DocumentSource): PreviewSection[] =>
+  doc.applicable.map((key, index) => ({
     number: index + 1,
     key,
     title: SECTION_CATALOGUE[key].title,
     blocks: sectionBlocks(doc, key),
   }));
 
-const FIRST_PAGE_SECTIONS = 2;
-const SECTIONS_PER_PAGE = 3;
+/** Sanitised content only has top-level paragraphs and lists, so those are the natural split points. */
+const TOP_LEVEL_ELEMENTS = /<(p|ul|ol)>[\s\S]*?<\/\1>/g;
 
-/** Deterministic pagination: the title page holds fewer sections than the rest. */
+const splitBlock = (block: PreviewBlock, maxWeight: number): PreviewBlock[] => {
+  if (htmlToPlainText(block.html).length <= maxWeight) return [block];
+  const elements = block.html.match(TOP_LEVEL_ELEMENTS) ?? [block.html];
+  const chunks: string[] = [];
+  let current = "";
+  for (const element of elements) {
+    if (current !== "" && htmlToPlainText(current + element).length > maxWeight) {
+      chunks.push(current);
+      current = "";
+    }
+    current += element;
+  }
+  if (current !== "") chunks.push(current);
+  return chunks.map((html, index) => ({ label: index === 0 ? block.label : "", html }));
+};
+
+/**
+ * Deterministic pagination by content weight. Blocks (and oversized blocks, by paragraph or list) flow onto the
+ * next page when the current one is full, so long sections continue instead of being clipped in Print Layout.
+ */
 export const paginate = (sections: PreviewSection[]): PreviewPage[] => {
-  const pages: PreviewPage[] = [{ index: 0, hasTitle: true, sections: sections.slice(0, FIRST_PAGE_SECTIONS) }];
-  for (let start = FIRST_PAGE_SECTIONS; start < sections.length; start += SECTIONS_PER_PAGE) {
-    pages.push({ index: pages.length, hasTitle: false, sections: sections.slice(start, start + SECTIONS_PER_PAGE) });
+  const pages: PreviewPage[] = [{ index: 0, hasTitle: true, sections: [] }];
+  let used = 0;
+  const capacityOf = (page: PreviewPage) => (page.hasTitle ? PAGE_CAPACITY.first : PAGE_CAPACITY.rest);
+  const current = () => pages[pages.length - 1];
+  const startPage = () => {
+    pages.push({ index: pages.length, hasTitle: false, sections: [] });
+    used = 0;
+  };
+
+  for (const section of sections) {
+    let fragment: PreviewSection | null = null;
+    let hasPlacedBlock = false;
+    const place = (block: PreviewBlock) => {
+      const weight = htmlToPlainText(block.html).length + BLOCK_WEIGHT;
+      const headingCost = fragment ? 0 : HEADING_WEIGHT;
+      if (used > 0 && used + weight + headingCost > capacityOf(current())) {
+        startPage();
+        fragment = null;
+      }
+      if (!fragment) {
+        fragment = { ...section, blocks: [], continued: hasPlacedBlock || undefined };
+        current().sections.push(fragment);
+        used += HEADING_WEIGHT;
+      }
+      fragment.blocks.push(block);
+      hasPlacedBlock = true;
+      used += weight;
+    };
+
+    if (section.blocks.length === 0) {
+      // A heading alone still takes space and must land somewhere.
+      if (used + HEADING_WEIGHT > capacityOf(current())) startPage();
+      current().sections.push({ ...section });
+      used += HEADING_WEIGHT;
+      continue;
+    }
+    for (const block of section.blocks.flatMap((b) => splitBlock(b, PAGE_CAPACITY.rest - HEADING_WEIGHT - BLOCK_WEIGHT))) place(block);
   }
   return pages;
 };
 
-export const buildPreviewMeta = (doc: IfuDocument): PreviewMeta => ({
+export const buildPreviewMeta = (doc: DocumentSource): PreviewMeta => ({
   deviceName: doc.deviceName,
   modelNumber: doc.modelNumber,
   manufacturerName: doc.manufacturerName,

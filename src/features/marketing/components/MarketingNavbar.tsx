@@ -29,8 +29,8 @@ export const MarketingNavbar = () => {
       >
         <div
           className={cn(
-            "mx-auto flex max-w-6xl items-center justify-between gap-4 rounded-2xl border border-transparent px-4 transition-all duration-500 ease-out-expo",
-            scrolled ? "h-14 border-glass-border bg-background/80 shadow-lg shadow-primary/5 backdrop-blur-xl backdrop-saturate-150" : "h-16 bg-transparent",
+            "mx-auto flex max-w-6xl items-center justify-between gap-4 rounded-2xl border border-glass-border bg-background px-4 transition-all duration-500 ease-out-expo",
+            scrolled ? "h-14 shadow-lg shadow-primary/5" : "h-16",
           )}
         >
           <Logo />

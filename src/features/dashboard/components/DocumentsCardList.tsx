@@ -5,21 +5,20 @@ import { AnimatePresence, motion } from "motion/react";
 import { CategoryIcon } from "@/components/shared/CategoryIcon";
 import { RiskBadge } from "@/components/shared/RiskBadge";
 import { StatusBadge } from "@/components/shared/StatusBadge";
-import { MOCK_NOW } from "@/features/ifu-wizard/mock-data";
-import type { IfuDocumentSummary } from "@/features/ifu-wizard/types";
 import { formatRelative } from "@/lib/dates";
 import { EASE_OUT_EXPO } from "@/lib/motion";
 
+import type { DashboardDocument } from "../types";
 import { DocumentRowActions } from "./DocumentRowActions";
 
 interface DocumentsCardListProps {
-  documents: IfuDocumentSummary[];
-  onDuplicate: (doc: IfuDocumentSummary) => void;
-  onDelete: (doc: IfuDocumentSummary) => void;
+  documents: DashboardDocument[];
+  now: string;
+  onDelete: (doc: DashboardDocument) => void;
 }
 
 /** Mobile (< md) alternative to the table. */
-export const DocumentsCardList = ({ documents, onDuplicate, onDelete }: DocumentsCardListProps) => (
+export const DocumentsCardList = ({ documents, now, onDelete }: DocumentsCardListProps) => (
   <ul className="divide-y md:hidden">
     <AnimatePresence initial={true}>
       {documents.map((doc, index) => (
@@ -34,18 +33,18 @@ export const DocumentsCardList = ({ documents, onDuplicate, onDelete }: Document
           <div className="flex items-start gap-3">
             <CategoryIcon category={doc.category} />
             <div className="min-w-0 flex-1">
-              <p className="font-medium leading-snug">{doc.deviceName}</p>
-              <p className="font-mono text-xs text-muted-foreground">Model {doc.modelNumber}</p>
+              <p className="font-medium leading-snug">{doc.deviceName || "Untitled device"}</p>
+              <p className="font-mono text-xs text-muted-foreground">{doc.modelNumber ? `Model ${doc.modelNumber}` : "No model number"}</p>
             </div>
           </div>
           <div className="flex flex-wrap items-center gap-2">
             <StatusBadge status={doc.status} />
-            <RiskBadge riskClass={doc.riskClass} />
+            {doc.riskClass && <RiskBadge riskClass={doc.riskClass} />}
             <time dateTime={doc.updatedAt} className="ml-auto text-xs text-muted-foreground">
-              {formatRelative(doc.updatedAt, MOCK_NOW)}
+              {formatRelative(doc.updatedAt, new Date(now))}
             </time>
           </div>
-          <DocumentRowActions doc={doc} onDuplicate={onDuplicate} onDelete={onDelete} />
+          <DocumentRowActions doc={doc} onDelete={onDelete} />
         </motion.li>
       ))}
     </AnimatePresence>

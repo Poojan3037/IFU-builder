@@ -1,4 +1,4 @@
-import type { SectionKey } from "@/features/ifu-wizard/types";
+import type { LicenceType, ManufacturerType, SectionKey } from "@/features/ifu-wizard/types";
 
 export type SectionStructuredKind = "storage" | "sterilisation" | "shelfLife";
 
@@ -23,3 +23,19 @@ export interface SectionDef {
 }
 
 export type SectionProgressState = "complete" | "current" | "not_started";
+
+/** The Step 1 fields the read-only licence section is generated from. */
+export interface LicencePreviewInfo {
+  manufacturerType: ManufacturerType;
+  manufacturerName: string;
+  manufacturerAddress: string;
+  manufacturerState: string;
+  manufacturerPin: string;
+  manufacturerCountry: string;
+  licenceType: LicenceType;
+  licenceNumber: string;
+  importerName: string;
+  importerAddress: string;
+  customerCarePhone: string;
+  customerCareEmail: string;
+}

@@ -1,17 +1,18 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { useState, useTransition } from "react";
 import { useForm, useWatch, type FieldErrors } from "react-hook-form";
 import { toast } from "sonner";
 
-import { MOCK_SECTION_CONTENT } from "@/features/sections/mock-data";
+import { SECTION_CATALOGUE } from "@/features/sections/catalogue";
 
+import { saveCategoryRiskAction } from "../actions";
 import { CONDITIONAL_SECTIONS, getApplicableSections, getExtraWarnings } from "../rules/applicability";
-import { categoryRiskSchema, type CategoryRiskInput } from "../schema";
-import type { DeviceCategory, DeviceProfile, RiskClass } from "../types";
+import { categoryRiskDraftSchema, categoryRiskSchema, type CategoryRiskInput, type SaveCategoryRiskMode } from "../schema";
+import type { DeviceCategory, DeviceProfile, RiskClass, SectionKey } from "../types";
 import type { ConsistencyWarning } from "./ConsistencyWarnings";
-import { useWizardNavigation } from "./WizardNavigation.hooks";
 
 /** FR-S2-02: sensible defaults pre-selected by category (user can still change them). */
 const CATEGORY_DEFAULTS: Partial<Record<DeviceCategory, Partial<CategoryRiskInput>>> = {
@@ -41,17 +42,19 @@ export const useCategoryRiskForm = (profile: DeviceProfile) => {
   return { form, handleCategoryChange, applyRiskClass };
 };
 
-const SECTIONS_WITH_CONTENT = new Set(Object.keys(MOCK_SECTION_CONTENT));
-
 /** Live derived state for the includes panel, consistency warnings and the WF-02 notice. */
-export const useCategoryRiskDerived = (form: ReturnType<typeof useCategoryRiskForm>["form"], initialProfile: DeviceProfile) => {
+export const useCategoryRiskDerived = (
+  form: ReturnType<typeof useCategoryRiskForm>["form"],
+  initialProfile: DeviceProfile,
+  sectionsWithContent: SectionKey[],
+) => {
   const values = useWatch({ control: form.control }) as CategoryRiskInput;
   const applicable = getApplicableSections(values);
   const initiallyApplicable = getApplicableSections(initialProfile);
 
   const addedSections = applicable.filter((key) => CONDITIONAL_SECTIONS.includes(key));
   const coreSections = applicable.filter((key) => !CONDITIONAL_SECTIONS.includes(key));
-  const hiddenSections = initiallyApplicable.filter((key) => !applicable.includes(key) && SECTIONS_WITH_CONTENT.has(key));
+  const hiddenSections = initiallyApplicable.filter((key) => !applicable.includes(key) && sectionsWithContent.includes(key));
 
   const warnings: ConsistencyWarning[] = [];
   if (values.category === "SINGLE_USE" && values.isReusable === true)
@@ -64,22 +67,67 @@ export const useCategoryRiskDerived = (form: ReturnType<typeof useCategoryRiskFo
   return { values, addedSections, coreSections, hiddenSections, extraWarnings: getExtraWarnings(values), warnings };
 };
 
+const sectionTitles = (keys: SectionKey[]) => keys.map((key) => SECTION_CATALOGUE[key].title).join(", ");
+
 export const useCategoryRiskActions = (form: ReturnType<typeof useCategoryRiskForm>["form"], documentId: string) => {
-  const nav = useWizardNavigation();
+  const router = useRouter();
   const [helperOpen, setHelperOpen] = useState(false);
+  const [isSavingDraft, startDraft] = useTransition();
+  const [isContinuing, startContinue] = useTransition();
+
+  /** Returns true on success; surfaces field errors or a toast otherwise, and the WF-02 notice when sections get hidden. */
+  const persist = async (values: CategoryRiskInput, mode: SaveCategoryRiskMode) => {
+    const result = await saveCategoryRiskAction({ documentId, mode, values });
+    if (result.success) {
+      form.reset(values, { keepValues: true, keepErrors: true });
+      const { hiddenSections } = result.data;
+      if (hiddenSections.length)
+        toast.info("Some sections are now hidden", {
+          description: `${sectionTitles(hiddenSections)} no longer apply. Your content is kept if you change the answers back.`,
+        });
+      return true;
+    }
+    const { fieldErrors, message } = result.error;
+    const keys = Object.keys(fieldErrors ?? {}).filter((key) => key in form.getValues());
+    keys.forEach((key, index) =>
+      form.setError(key as keyof CategoryRiskInput, { message: fieldErrors?.[key]?.[0] }, { shouldFocus: index === 0 }),
+    );
+    toast.error(keys.length ? "Fix the highlighted answers before saving" : message);
+    return false;
+  };
 
   const handleInvalid = (errors: FieldErrors<CategoryRiskInput>) => {
     const count = Object.keys(errors).length;
     toast.error(`${count} answer${count === 1 ? " is" : "s are"} still needed`);
   };
 
+  const handleSaveDraft = () => {
+    const result = categoryRiskDraftSchema.safeParse(form.getValues());
+    if (!result.success) return toast.error("Some answers are not valid");
+    startDraft(async () => {
+      if (!(await persist(result.data, "draft"))) return;
+      toast.success("Draft saved", { description: "You can resume from the dashboard any time." });
+      router.push("/dashboard");
+    });
+  };
+
+  const handleSubmit = form.handleSubmit(
+    (values) =>
+      startContinue(async () => {
+        const parsed = categoryRiskSchema.safeParse(values);
+        if (!parsed.success) return;
+        if (await persist(parsed.data, "continue")) router.push(`/ifu/${documentId}/sections/device_description`);
+      }),
+    handleInvalid,
+  );
+
   return {
     helperOpen,
     setHelperOpen,
-    isSavingDraft: nav.isSavingDraft,
-    isContinuing: nav.isContinuing,
-    handleSubmit: form.handleSubmit(() => nav.continueTo(`/ifu/${documentId}/sections/device_description`), handleInvalid),
-    handleSaveDraft: nav.saveDraftAndExit,
-    handleBack: () => nav.go(`/ifu/${documentId}/basic-info`),
+    isSavingDraft,
+    isContinuing,
+    handleSubmit,
+    handleSaveDraft,
+    handleBack: () => router.push(`/ifu/${documentId}/basic-info`),
   };
 };

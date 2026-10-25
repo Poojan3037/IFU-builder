@@ -1,6 +1,7 @@
 "use client";
 
 import { AnimatePresence, motion } from "motion/react";
+import { TriangleAlert } from "lucide-react";
 
 import { DisclaimerFooter } from "@/components/shared/DisclaimerFooter";
 
@@ -16,6 +17,8 @@ interface ComplianceCheckPresentationProps {
   documentId: string;
   subtitle: string;
   isScanning: boolean;
+  /** Set when the run itself failed (not when issues were found). */
+  error: string | null;
   blocking: ComplianceIssue[];
   advisory: ComplianceIssue[];
   looksGood: LooksGoodItem[];
@@ -32,6 +35,7 @@ export const ComplianceCheckPresentation = ({
   documentId,
   subtitle,
   isScanning,
+  error,
   blocking,
   advisory,
   looksGood,
@@ -55,6 +59,20 @@ export const ComplianceCheckPresentation = ({
       <AnimatePresence mode="wait">
         {isScanning ? (
           <ScanningState key="scanning" />
+        ) : error ? (
+          <motion.div
+            key="error"
+            role="alert"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="flex items-start gap-3 rounded-2xl border border-danger/25 bg-danger-soft p-5 text-danger-soft-foreground"
+          >
+            <TriangleAlert aria-hidden className="mt-0.5 size-5 shrink-0" />
+            <div>
+              <p className="font-semibold">The compliance check didn&apos;t run</p>
+              <p className="mt-1 text-sm">{error}</p>
+            </div>
+          </motion.div>
         ) : (
           <motion.div key="results" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-col gap-6">
             <SummaryBanner
@@ -91,7 +109,7 @@ export const ComplianceCheckPresentation = ({
       <ComplianceActions
         backHref={backHref}
         previewHref={`/ifu/${documentId}/preview`}
-        canContinue={!isScanning && blocking.length === 0}
+        canContinue={!isScanning && !error && blocking.length === 0}
         isScanning={isScanning}
         onRerun={onRerun}
       />

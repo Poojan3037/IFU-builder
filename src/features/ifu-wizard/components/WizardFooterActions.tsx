@@ -25,7 +25,7 @@ export const WizardFooterActions = ({
   continueLabel = "Continue",
   formId,
 }: WizardFooterActionsProps) => (
-  <div className="glass sticky bottom-0 z-30 border-x-0 border-b-0">
+  <div className="sticky bottom-0 z-30 border-t border-glass-border bg-background">
     <div className="mx-auto flex max-w-5xl items-center justify-between gap-3 px-4 py-3 sm:px-6">
       <Button type="button" variant="ghost" size="lg" onClick={onBack} className="text-muted-foreground">
         <ArrowLeft />

@@ -14,9 +14,9 @@ interface PageTransitionProps {
 export const PageTransition = ({ children, className }: PageTransitionProps) => (
   <motion.div
     className={className}
-    initial={{ opacity: 0, y: 12, filter: "blur(4px)" }}
-    animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-    transition={{ duration: 0.45, ease: EASE_OUT_EXPO }}
+    initial={{ opacity: 0, y: 8 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ duration: 0.3, ease: EASE_OUT_EXPO }}
   >
     {children}
   </motion.div>

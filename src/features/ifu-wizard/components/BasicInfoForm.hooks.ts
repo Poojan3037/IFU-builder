@@ -1,41 +1,28 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { useState, useTransition } from "react";
 import { useForm, useFormState, type FieldErrors } from "react-hook-form";
 import { toast } from "sonner";
 
-import { basicInfoDraftSchema, basicInfoSchema, type BasicInfoInput } from "../schema";
-import type { IfuDocument, ManufacturerType } from "../types";
-import { useWizardNavigation } from "./WizardNavigation.hooks";
+import { saveBasicInfoAction } from "../actions";
+import type { BasicInfoDefaults } from "../queries";
+import { basicInfoDraftSchema, basicInfoSchema, type BasicInfoInput, type SaveBasicInfoMode } from "../schema";
+import type { ManufacturerType } from "../types";
+import { useAutosave } from "./Autosave.hooks";
+import { useAutosaveStatus } from "./AutosaveStatus.context";
 
-const toDefaults = (doc: IfuDocument): BasicInfoInput => ({
-  deviceName: doc.deviceName,
-  brandName: doc.brandName,
-  modelNumber: doc.modelNumber,
-  manufacturerType: doc.manufacturerType,
-  manufacturerName: doc.manufacturerName,
-  manufacturerAddress: doc.manufacturerAddress,
-  manufacturerState: doc.manufacturerState,
-  manufacturerPin: doc.manufacturerPin,
-  manufacturerCountry: doc.manufacturerType === "IMPORTER" ? doc.manufacturerCountry : "",
-  licenceType: doc.licenceType,
-  licenceNumber: doc.licenceNumber,
-  importerName: doc.importerName,
-  importerAddress: doc.importerAddress,
-  importerState: "",
-  importerPin: "",
-  customerCarePhone: doc.customerCarePhone.replace(/^\+91\s?/, ""),
-  customerCareEmail: doc.customerCareEmail,
-  version: doc.version,
-  issueDate: new Date(doc.issueDate),
-  description: doc.description,
+const toDefaults = (defaults: BasicInfoDefaults): BasicInfoInput => ({
+  ...defaults,
+  customerCarePhone: defaults.customerCarePhone.replace(/^\+91\s?/, ""),
+  issueDate: new Date(defaults.issueDate),
 });
 
-export const useBasicInfoForm = (document: IfuDocument) => {
+export const useBasicInfoForm = (defaults: BasicInfoDefaults) => {
   const form = useForm<BasicInfoInput>({
     resolver: zodResolver(basicInfoSchema),
-    defaultValues: toDefaults(document),
+    defaultValues: toDefaults(defaults),
     mode: "onTouched",
   });
 
@@ -49,11 +36,36 @@ export const useBasicInfoForm = (document: IfuDocument) => {
   return { form, handleManufacturerTypeChange };
 };
 
-/** Save as Draft (formats only), Continue (full validation) and the unsaved-changes guard. */
+type SaveMode = SaveBasicInfoMode;
+
+/** Save as Draft (formats only), Continue (full validation), autosave and the unsaved-changes guard. */
 export const useBasicInfoActions = (form: ReturnType<typeof useBasicInfoForm>["form"], documentId: string) => {
-  const nav = useWizardNavigation();
+  const router = useRouter();
+  const { setStatus } = useAutosaveStatus();
   const [leaveDialogOpen, setLeaveDialogOpen] = useState(false);
+  const [isSavingDraft, startDraft] = useTransition();
+  const [isContinuing, startContinue] = useTransition();
   const { isDirty } = useFormState({ control: form.control });
+
+  /** Persists `values`; returns false (after surfacing errors on fields or a toast) when the save fails. */
+  const persist = async (values: BasicInfoInput, mode: SaveMode) => {
+    const result = await saveBasicInfoAction({ documentId, mode, values });
+    if (result.success) {
+      // New baseline for isDirty without clobbering anything typed while the request was in flight.
+      form.reset(values, { keepValues: true, keepErrors: true });
+      return true;
+    }
+    const { fieldErrors, message } = result.error;
+    const keys = Object.keys(fieldErrors ?? {}).filter((key) => key in form.getValues());
+    keys.forEach((key, index) =>
+      form.setError(key as keyof BasicInfoInput, { message: fieldErrors?.[key]?.[0] }, { shouldFocus: index === 0 }),
+    );
+    if (mode !== "autosave") toast.error(keys.length ? "Fix the highlighted fields before saving" : message);
+    return false;
+  };
+
+  const autosave = (values: BasicInfoInput) => persist(values, "autosave");
+  useAutosave({ form, save: autosave, paused: isSavingDraft || isContinuing });
 
   const handleSaveDraft = () => {
     const result = basicInfoDraftSchema.safeParse(form.getValues());
@@ -66,7 +78,14 @@ export const useBasicInfoActions = (form: ReturnType<typeof useBasicInfoForm>["f
       return;
     }
     setLeaveDialogOpen(false);
-    nav.saveDraftAndExit();
+    startDraft(async () => {
+      setStatus({ state: "saving", savedAt: null });
+      const saved = await persist(result.data, "draft");
+      setStatus(saved ? { state: "saved", savedAt: new Date().toISOString() } : { state: "error", savedAt: null });
+      if (!saved) return;
+      toast.success("Draft saved", { description: "You can resume from the dashboard any time." });
+      router.push("/dashboard");
+    });
   };
 
   const handleInvalid = (errors: FieldErrors<BasicInfoInput>) => {
@@ -74,16 +93,25 @@ export const useBasicInfoActions = (form: ReturnType<typeof useBasicInfoForm>["f
     toast.error(`${count} field${count === 1 ? "" : "s"} need${count === 1 ? "s" : ""} your attention`);
   };
 
-  const handleSubmit = form.handleSubmit(() => nav.continueTo(`/ifu/${documentId}/category-risk`), handleInvalid);
+  const handleSubmit = form.handleSubmit(
+    (values) =>
+      startContinue(async () => {
+        setStatus({ state: "saving", savedAt: null });
+        const saved = await persist(values, "continue");
+        setStatus(saved ? { state: "saved", savedAt: new Date().toISOString() } : { state: "error", savedAt: null });
+        if (saved) router.push(`/ifu/${documentId}/category-risk`);
+      }),
+    handleInvalid,
+  );
 
   const handleBack = () => {
     if (isDirty) setLeaveDialogOpen(true);
-    else nav.go("/dashboard");
+    else router.push("/dashboard");
   };
 
   const handleDiscard = () => {
     setLeaveDialogOpen(false);
-    nav.go("/dashboard");
+    router.push("/dashboard");
   };
 
   return {
@@ -93,7 +121,7 @@ export const useBasicInfoActions = (form: ReturnType<typeof useBasicInfoForm>["f
     handleDiscard,
     leaveDialogOpen,
     setLeaveDialogOpen,
-    isSavingDraft: nav.isSavingDraft,
-    isContinuing: nav.isContinuing,
+    isSavingDraft,
+    isContinuing,
   };
 };

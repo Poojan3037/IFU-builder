@@ -7,22 +7,21 @@ import { RiskBadge } from "@/components/shared/RiskBadge";
 import { StatusBadge } from "@/components/shared/StatusBadge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { CATEGORY_META } from "@/features/ifu-wizard/constants";
-import { MOCK_NOW } from "@/features/ifu-wizard/mock-data";
-import type { IfuDocumentSummary } from "@/features/ifu-wizard/types";
 import { formatDate, formatRelative } from "@/lib/dates";
 import { EASE_OUT_EXPO } from "@/lib/motion";
 
+import type { DashboardDocument } from "../types";
 import { DocumentRowActions } from "./DocumentRowActions";
 
 const MotionRow = motion.create(TableRow);
 
 interface DocumentsTableProps {
-  documents: IfuDocumentSummary[];
-  onDuplicate: (doc: IfuDocumentSummary) => void;
-  onDelete: (doc: IfuDocumentSummary) => void;
+  documents: DashboardDocument[];
+  now: string;
+  onDelete: (doc: DashboardDocument) => void;
 }
 
-export const DocumentsTable = ({ documents, onDuplicate, onDelete }: DocumentsTableProps) => (
+export const DocumentsTable = ({ documents, now, onDelete }: DocumentsTableProps) => (
   <div className="hidden md:block">
     <Table>
       <TableHeader>
@@ -52,25 +51,25 @@ export const DocumentsTable = ({ documents, onDuplicate, onDelete }: DocumentsTa
                 <div className="flex items-center gap-3">
                   <CategoryIcon category={doc.category} className="transition-transform duration-300 group-hover:scale-110" />
                   <div className="min-w-0">
-                    <p className="truncate font-medium">{doc.deviceName}</p>
-                    <p className="font-mono text-xs text-muted-foreground">Model {doc.modelNumber}</p>
+                    <p className="truncate font-medium">{doc.deviceName || "Untitled device"}</p>
+                    <p className="font-mono text-xs text-muted-foreground">{doc.modelNumber ? `Model ${doc.modelNumber}` : "No model number"}</p>
                   </div>
                 </div>
               </TableCell>
-              <TableCell className="text-muted-foreground">{CATEGORY_META[doc.category].short}</TableCell>
+              <TableCell className="text-muted-foreground">{doc.category ? CATEGORY_META[doc.category].short : "—"}</TableCell>
               <TableCell>
-                <RiskBadge riskClass={doc.riskClass} />
+                {doc.riskClass ? <RiskBadge riskClass={doc.riskClass} /> : <span className="text-muted-foreground">—</span>}
               </TableCell>
               <TableCell>
                 <StatusBadge status={doc.status} />
               </TableCell>
               <TableCell className="text-muted-foreground">
                 <time dateTime={doc.updatedAt} title={formatDate(doc.updatedAt)}>
-                  {formatRelative(doc.updatedAt, MOCK_NOW)}
+                  {formatRelative(doc.updatedAt, new Date(now))}
                 </time>
               </TableCell>
               <TableCell className="pr-4">
-                <DocumentRowActions doc={doc} onDuplicate={onDuplicate} onDelete={onDelete} />
+                <DocumentRowActions doc={doc} onDelete={onDelete} />
               </TableCell>
             </MotionRow>
           ))}

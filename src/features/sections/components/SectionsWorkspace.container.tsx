@@ -2,22 +2,25 @@
 
 import type { ReactNode } from "react";
 
-import { DEMO_DOCUMENT } from "@/features/ifu-wizard/mock-data";
+import type { SectionKey } from "@/features/ifu-wizard/types";
 
 import { useSectionProgress } from "./SectionsWorkspace.hooks";
 import { SectionsWorkspacePresentation } from "./SectionsWorkspace.presentation";
 
 interface SectionsWorkspaceContainerProps {
+  documentId: string;
+  deviceName: string;
+  applicable: SectionKey[];
   children: ReactNode;
 }
 
-export const SectionsWorkspaceContainer = ({ children }: SectionsWorkspaceContainerProps) => {
-  const { documentId, items, completedCount, totalCount, allRequiredComplete } = useSectionProgress();
+export const SectionsWorkspaceContainer = ({ documentId, deviceName, applicable, children }: SectionsWorkspaceContainerProps) => {
+  const { items, completedCount, totalCount, allRequiredComplete } = useSectionProgress(applicable);
 
   return (
     <SectionsWorkspacePresentation
       documentId={documentId}
-      deviceName={DEMO_DOCUMENT.deviceName}
+      deviceName={deviceName}
       items={items}
       completedCount={completedCount}
       totalCount={totalCount}

@@ -1,6 +1,4 @@
-import type { IfuDocumentSummary } from "@/features/ifu-wizard/types";
-
-import type { RiskFilter, StatusFilter } from "../types";
+import type { DashboardDocument, RiskFilter, StatusFilter } from "../types";
 import { DocumentsCardList } from "./DocumentsCardList";
 import { DocumentsPagination } from "./DocumentsPagination";
 import { DocumentsTable } from "./DocumentsTable";
@@ -8,7 +6,9 @@ import { DocumentsToolbar } from "./DocumentsToolbar";
 import { NoResults } from "./NoResults";
 
 interface DocumentsPresentationProps {
-  documents: IfuDocumentSummary[];
+  documents: DashboardDocument[];
+  now: string;
+  isPending: boolean;
   totalCount: number;
   page: number;
   pageCount: number;
@@ -22,12 +22,13 @@ interface DocumentsPresentationProps {
   onRiskChange: (value: string) => void;
   onPageChange: (page: number) => void;
   onClearFilters: () => void;
-  onDuplicate: (doc: IfuDocumentSummary) => void;
-  onDelete: (doc: IfuDocumentSummary) => void;
+  onDelete: (doc: DashboardDocument) => void;
 }
 
 export const DocumentsPresentation = ({
   documents,
+  now,
+  isPending,
   totalCount,
   page,
   pageCount,
@@ -41,10 +42,9 @@ export const DocumentsPresentation = ({
   onRiskChange,
   onPageChange,
   onClearFilters,
-  onDuplicate,
   onDelete,
 }: DocumentsPresentationProps) => (
-  <section aria-labelledby="documents-heading" className="overflow-hidden rounded-2xl border bg-card shadow-sm">
+  <section aria-labelledby="documents-heading" aria-busy={isPending} className="overflow-hidden rounded-2xl border bg-card shadow-sm transition-opacity aria-busy:opacity-60">
     <h2 id="documents-heading" className="sr-only">
       Documents
     </h2>
@@ -65,8 +65,8 @@ export const DocumentsPresentation = ({
       <NoResults onClearFilters={onClearFilters} />
     ) : (
       <>
-        <DocumentsTable documents={documents} onDuplicate={onDuplicate} onDelete={onDelete} />
-        <DocumentsCardList documents={documents} onDuplicate={onDuplicate} onDelete={onDelete} />
+        <DocumentsTable documents={documents} now={now} onDelete={onDelete} />
+        <DocumentsCardList documents={documents} now={now} onDelete={onDelete} />
         <DocumentsPagination
           page={page}
           pageCount={pageCount}

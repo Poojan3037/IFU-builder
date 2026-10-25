@@ -8,7 +8,7 @@ import type { ReactNode } from "react";
 import { Button } from "@/components/ui/button";
 import { stepSlide } from "@/lib/motion";
 
-import { AutosaveIndicator } from "./AutosaveIndicator";
+import { AutosaveIndicator, type AutosaveIndicatorProps } from "./AutosaveIndicator";
 import { WizardStepper } from "./WizardStepper";
 
 interface WizardShellPresentationProps {
@@ -17,6 +17,7 @@ interface WizardShellPresentationProps {
   stepIndex: number;
   direction: number;
   maxReachableIndex: number;
+  autosave: AutosaveIndicatorProps;
   children: ReactNode;
 }
 
@@ -26,6 +27,7 @@ export const WizardShellPresentation = ({
   stepIndex,
   direction,
   maxReachableIndex,
+  autosave,
   children,
 }: WizardShellPresentationProps) => (
   <div className="flex flex-1 flex-col">
@@ -40,7 +42,7 @@ export const WizardShellPresentation = ({
           <div className="flex min-w-0 items-center gap-3">
             <span className="hidden truncate text-sm font-medium text-muted-foreground sm:inline">{deviceName}</span>
             {/* Sections has its own live indicator; review steps don't autosave. */}
-            {stepIndex < 2 && <AutosaveIndicator />}
+            {stepIndex < 2 && <AutosaveIndicator {...autosave} />}
           </div>
         </div>
         <WizardStepper documentId={documentId} activeIndex={stepIndex} maxReachableIndex={maxReachableIndex} />

@@ -1,25 +1,18 @@
 "use client";
 
-import { RISK_CLASS_META } from "@/features/ifu-wizard/constants";
-import { DEMO_DOCUMENT } from "@/features/ifu-wizard/mock-data";
-import { getApplicableSections } from "@/features/ifu-wizard/rules/applicability";
-
-import { CATEGORY_CONTEXT } from "../constants";
-import { MOCK_LOOKS_GOOD, MOCK_LOOKS_GOOD_PASSED } from "../mock-data";
 import { useAdvisoryDismissals, useComplianceRun } from "./ComplianceCheck.hooks";
 import { ComplianceCheckPresentation } from "./ComplianceCheck.presentation";
 
 interface ComplianceCheckContainerProps {
   documentId: string;
-  /** Demo switch (?state=passed) to show the "All checks passed" variant. */
-  passed: boolean;
+  /** FR-CMP-02, built on the server from the document's real category and class. */
+  subtitle: string;
+  totalSections: number;
 }
 
-export const ComplianceCheckContainer = ({ documentId, passed }: ComplianceCheckContainerProps) => {
-  const { isScanning, rerun, issues } = useComplianceRun(passed);
-  const dismissals = useAdvisoryDismissals(issues);
-  const doc = DEMO_DOCUMENT;
-  const subtitle = `We reviewed your document against MDR 2017 labelling requirements for ${RISK_CLASS_META[doc.riskClass].label} ${CATEGORY_CONTEXT[doc.category]} devices.`;
+export const ComplianceCheckContainer = ({ documentId, subtitle, totalSections }: ComplianceCheckContainerProps) => {
+  const { isScanning, error, data, rerun } = useComplianceRun(documentId);
+  const dismissals = useAdvisoryDismissals(data?.issues ?? []);
   const firstIssue = dismissals.blocking[0] ?? dismissals.advisory[0];
 
   return (
@@ -27,10 +20,11 @@ export const ComplianceCheckContainer = ({ documentId, passed }: ComplianceCheck
       documentId={documentId}
       subtitle={subtitle}
       isScanning={isScanning}
+      error={error}
       blocking={dismissals.blocking}
       advisory={dismissals.advisory}
-      looksGood={passed ? MOCK_LOOKS_GOOD_PASSED : MOCK_LOOKS_GOOD}
-      totalSections={getApplicableSections(doc.profile).length}
+      looksGood={data?.looksGood ?? []}
+      totalSections={totalSections}
       backHref={`/ifu/${documentId}/sections/${firstIssue?.sectionKey ?? "device_description"}`}
       pendingIssue={dismissals.pendingIssue}
       onRerun={rerun}

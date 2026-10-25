@@ -1,10 +1,7 @@
-import { Plus } from "lucide-react";
-import Link from "next/link";
-
 import { Magnetic, Reveal, Stagger, StaggerItem } from "@/components/shared/motion";
-import { Button } from "@/components/ui/button";
 
 import { EMPTY_STATE_STEPS } from "../constants";
+import { CreateIfuButton } from "./CreateIfuButton";
 import { EmptyStateIllustration } from "./EmptyStateIllustration";
 
 /** FR-DASH-09: first-time user with no documents. */
@@ -24,11 +21,7 @@ export const EmptyState = () => (
       </Reveal>
       <Reveal delay={0.2} className="mt-6">
         <Magnetic strength={0.2}>
-          <Button asChild className="h-10 gap-2 px-5 shadow-lg shadow-primary/25">
-            <Link href="/ifu/demo/basic-info">
-              <Plus aria-hidden /> Create your first IFU
-            </Link>
-          </Button>
+          <CreateIfuButton label="Create your first IFU" className="h-10 gap-2 px-5 shadow-lg shadow-primary/25" />
         </Magnetic>
       </Reveal>
       <Stagger as="ol" delay={0.3} className="mx-auto mt-12 grid max-w-3xl gap-4 text-left sm:grid-cols-3">

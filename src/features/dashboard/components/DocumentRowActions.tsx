@@ -15,6 +15,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
+import { getStepPath } from "@/features/ifu-wizard/navigation";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -22,15 +23,16 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import type { IfuDocumentSummary } from "@/features/ifu-wizard/types";
+
+import type { DashboardDocument } from "../types";
 
 interface DocumentRowActionsProps {
-  doc: IfuDocumentSummary;
-  onDuplicate: (doc: IfuDocumentSummary) => void;
-  onDelete: (doc: IfuDocumentSummary) => void;
+  doc: DashboardDocument;
+  onDelete: (doc: DashboardDocument) => void;
+  deleting?: boolean;
 }
 
-export const DocumentRowActions = ({ doc, onDuplicate, onDelete }: DocumentRowActionsProps) => {
+export const DocumentRowActions = ({ doc, onDelete, deleting = false }: DocumentRowActionsProps) => {
   const [confirmOpen, setConfirmOpen] = useState(false);
   const isCompleted = doc.status === "COMPLETED";
 
@@ -51,7 +53,7 @@ export const DocumentRowActions = ({ doc, onDuplicate, onDelete }: DocumentRowAc
         </>
       ) : (
         <Button asChild variant="outline" size="sm">
-          <Link href={`/ifu/${doc.id}/basic-info`} aria-label={`Edit ${doc.deviceName}`}>
+          <Link href={getStepPath(doc.id, doc.lastStep)} aria-label={`Edit ${doc.deviceName}`}>
             <Pencil aria-hidden /> Edit
           </Link>
         </Button>
@@ -63,11 +65,11 @@ export const DocumentRowActions = ({ doc, onDuplicate, onDelete }: DocumentRowAc
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-44">
-          <DropdownMenuItem onSelect={() => onDuplicate(doc)}>
-            <Copy aria-hidden /> Duplicate
+          <DropdownMenuItem disabled title="Coming soon">
+            <Copy aria-hidden /> Duplicate <span className="ml-auto text-xs text-muted-foreground">Soon</span>
           </DropdownMenuItem>
           <DropdownMenuSeparator />
-          <DropdownMenuItem variant="destructive" onSelect={() => setConfirmOpen(true)}>
+          <DropdownMenuItem variant="destructive" disabled={deleting} onSelect={() => setConfirmOpen(true)}>
             <Trash2 aria-hidden /> Delete
           </DropdownMenuItem>
         </DropdownMenuContent>
@@ -77,7 +79,7 @@ export const DocumentRowActions = ({ doc, onDuplicate, onDelete }: DocumentRowAc
           <AlertDialogHeader>
             <AlertDialogTitle>Delete this document?</AlertDialogTitle>
             <AlertDialogDescription>
-              &ldquo;{doc.deviceName}&rdquo; will be moved to trash. Support can restore it within 30 days.
+              &ldquo;{doc.deviceName || "Untitled device"}&rdquo; will be moved to trash. Support can restore it within 30 days.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

@@ -2,8 +2,6 @@
 
 import { useParams } from "next/navigation";
 
-import { DEMO_DOCUMENT } from "@/features/ifu-wizard/mock-data";
-import { getApplicableSections } from "@/features/ifu-wizard/rules/applicability";
 import type { SectionKey } from "@/features/ifu-wizard/types";
 
 import { SECTION_CATALOGUE } from "../catalogue";
@@ -20,13 +18,10 @@ export interface SectionNavItem {
   isRequired: boolean;
 }
 
-export const useApplicableSections = (): SectionKey[] => getApplicableSections(DEMO_DOCUMENT.profile);
-
 /** Nav items + progress for the left section list (FR-S3-01). */
-export const useSectionProgress = () => {
+export const useSectionProgress = (applicable: SectionKey[]) => {
   const params = useParams<{ id: string; sectionKey?: string }>();
   const { complete } = useSectionsStore();
-  const applicable = useApplicableSections();
   const currentKey = params.sectionKey as SectionKey | undefined;
 
   const items: SectionNavItem[] = applicable.map((key, index) => {

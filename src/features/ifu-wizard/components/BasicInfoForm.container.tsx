@@ -1,16 +1,17 @@
 "use client";
 
-import type { IfuDocument } from "../types";
+import type { BasicInfoDefaults } from "../queries";
 import { useBasicInfoActions, useBasicInfoForm } from "./BasicInfoForm.hooks";
 import { BasicInfoFormPresentation } from "./BasicInfoForm.presentation";
 
 interface BasicInfoFormContainerProps {
-  document: IfuDocument;
+  documentId: string;
+  defaults: BasicInfoDefaults;
 }
 
-export const BasicInfoFormContainer = ({ document }: BasicInfoFormContainerProps) => {
-  const { form, handleManufacturerTypeChange } = useBasicInfoForm(document);
-  const actions = useBasicInfoActions(form, document.id);
+export const BasicInfoFormContainer = ({ documentId, defaults }: BasicInfoFormContainerProps) => {
+  const { form, handleManufacturerTypeChange } = useBasicInfoForm(defaults);
+  const actions = useBasicInfoActions(form, documentId);
 
   return (
     <BasicInfoFormPresentation

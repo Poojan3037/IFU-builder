@@ -8,16 +8,18 @@ datasource db {
 }
 
 model User {
-  id            String    @id
+  id            String        @id
   name          String
-  email         String    @unique
-  emailVerified Boolean   @default(false)
+  email         String        @unique
+  emailVerified Boolean       @default(false)
   image         String?
   companyName   String?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
   sessions      Session[]
   accounts      Account[]
+  documents     IfuDocument[]
+  auditEvents   AuditEvent[]
 
   @@map("user")
 }
@@ -67,4 +69,217 @@ model Verification {
 
   @@index([identifier])
   @@map("verification")
+}
+
+enum DocumentStatus {
+  DRAFT
+  READY
+  COMPLETED
+}
+
+enum WizardStep {
+  BASIC_INFO
+  CATEGORY_RISK
+  SECTIONS
+  REVIEW
+}
+
+enum ManufacturerType {
+  INDIAN_MANUFACTURER
+  IMPORTER
+}
+
+enum LicenceType {
+  MANUFACTURING
+  LOAN
+  IMPORT
+  REGISTRATION
+}
+
+enum DeviceCategory {
+  IVD
+  IMPLANT
+  REUSABLE
+  SINGLE_USE
+  SAMD
+  OTHER
+}
+
+enum RiskClass {
+  A
+  B
+  C
+  D
+}
+
+enum SectionKey {
+  device_description
+  intended_use
+  indications_contraindications
+  warnings_precautions
+  instructions_for_use
+  sterilisation
+  reprocessing
+  maintenance
+  implant_card
+  ivd_performance
+  software_info
+  storage
+  disposal
+  manufacturer_licence
+  vigilance
+  symbols
+}
+
+enum Severity {
+  BLOCKING
+  ADVISORY
+}
+
+enum AuditAction {
+  CREATED
+  UPDATED
+  CHECK_RUN
+  ISSUE_DISMISSED
+  EXPORTED
+  DELETED
+}
+
+model IfuDocument {
+  id        String         @id @default(cuid())
+  ownerId   String
+  owner     User           @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  status    DocumentStatus @default(DRAFT)
+  lastStep  WizardStep     @default(BASIC_INFO)
+  version   String         @default("v1.0")
+  issueDate DateTime       @default(now())
+
+  // Step 1 — text fields default to "" so drafts can be saved partially (FR-S1-02)
+  deviceName          String           @default("")
+  brandName           String           @default("")
+  modelNumber         String           @default("")
+  description         String           @default("")
+  manufacturerType    ManufacturerType @default(INDIAN_MANUFACTURER)
+  manufacturerName    String           @default("")
+  manufacturerAddress String           @default("")
+  manufacturerState   String           @default("")
+  manufacturerPin     String           @default("")
+  manufacturerCountry String           @default("India")
+  licenceType         LicenceType      @default(MANUFACTURING)
+  licenceNumber       String           @default("")
+  importerName        String           @default("")
+  importerAddress     String           @default("")
+  importerState       String           @default("")
+  importerPin         String           @default("")
+  customerCarePhone   String           @default("")
+  customerCareEmail   String           @default("")
+
+  // Step 2 — null until the user answers
+  category       DeviceCategory?
+  isSterile      Boolean?
+  isReusable     Boolean?
+  isActive       Boolean?
+  hasMeasuringFn Boolean?
+  isLayUser      Boolean?
+  riskClass      RiskClass?
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  sections       IfuSection[]
+  complianceRuns ComplianceRun[]
+  exports        ExportRecord[]
+  versions       DocumentVersion[]
+  auditEvents    AuditEvent[]
+
+  @@index([ownerId, deletedAt, updatedAt])
+  @@map("ifu_document")
+}
+
+model IfuSection {
+  id         String      @id @default(cuid())
+  documentId String
+  document   IfuDocument @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  key        SectionKey
+  fields     Json        @default("{}")
+  isComplete Boolean     @default(false)
+  updatedAt  DateTime    @updatedAt
+
+  @@unique([documentId, key])
+  @@map("ifu_section")
+}
+
+model ComplianceRun {
+  id            String            @id @default(cuid())
+  documentId    String
+  document      IfuDocument       @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  createdAt     DateTime          @default(now())
+  isStale       Boolean           @default(false)
+  blockingCount Int               @default(0)
+  advisoryCount Int               @default(0)
+  issues        ComplianceIssue[]
+
+  @@index([documentId, createdAt])
+  @@map("compliance_run")
+}
+
+model ComplianceIssue {
+  id            String        @id @default(cuid())
+  runId         String
+  run           ComplianceRun @relation(fields: [runId], references: [id], onDelete: Cascade)
+  ruleId        String
+  severity      Severity
+  sectionKey    SectionKey
+  fieldKey      String?
+  title         String
+  message       String
+  dismissedAt   DateTime?
+  dismissReason String?
+
+  @@index([runId])
+  @@map("compliance_issue")
+}
+
+model ExportRecord {
+  id          String      @id @default(cuid())
+  documentId  String
+  document    IfuDocument @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  version     String
+  fileName    String
+  storageKey  String
+  options     Json
+  durationMs  Int
+  createdAt   DateTime    @default(now())
+  createdById String
+
+  @@index([documentId, createdAt])
+  @@map("export_record")
+}
+
+model DocumentVersion {
+  id         String      @id @default(cuid())
+  documentId String
+  document   IfuDocument @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  version    String
+  snapshot   Json
+  createdAt  DateTime    @default(now())
+
+  @@unique([documentId, version])
+  @@map("document_version")
+}
+
+model AuditEvent {
+  id         String       @id @default(cuid())
+  documentId String?
+  document   IfuDocument? @relation(fields: [documentId], references: [id], onDelete: SetNull)
+  userId     String
+  user       User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  action     AuditAction
+  meta       Json         @default("{}")
+  createdAt  DateTime     @default(now())
+
+  @@index([documentId, createdAt])
+  @@index([userId])
+  @@map("audit_event")
 }

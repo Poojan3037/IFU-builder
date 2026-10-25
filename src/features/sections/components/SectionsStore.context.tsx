@@ -4,11 +4,16 @@ import { createContext, useContext, useState, type ReactNode } from "react";
 
 import type { SectionKey } from "@/features/ifu-wizard/types";
 
-import { MOCK_SECTION_CONTENT, MOCK_STRUCTURED } from "../mock-data";
 import type { StructuredValues } from "../schema";
 
 type FieldMap = Partial<Record<SectionKey, Record<string, string>>>;
 type CompleteMap = Partial<Record<SectionKey, boolean>>;
+
+export interface SectionsStoreInitial {
+  fields: FieldMap;
+  completeKeys: SectionKey[];
+  structured: StructuredValues;
+}
 
 interface SectionsStore {
   fields: FieldMap;
@@ -21,40 +26,27 @@ interface SectionsStore {
 
 const SectionsStoreContext = createContext<SectionsStore | null>(null);
 
-const initialFields = (): FieldMap =>
-  Object.fromEntries(Object.entries(MOCK_SECTION_CONTENT).map(([key, value]) => [key, { ...value.fields }]));
-
-const initialComplete = (): CompleteMap => ({
-  ...Object.fromEntries(Object.entries(MOCK_SECTION_CONTENT).map(([key, value]) => [key, value.isComplete])),
-  // Auto-generated from Step 1, so it is complete as soon as Step 1 is valid.
-  manufacturer_licence: true,
-});
-
-const initialStructured: StructuredValues = {
-  tempMin: null,
-  tempMax: null,
-  humidity: null,
-  lightSensitive: MOCK_STRUCTURED.storage.lightSensitive,
-  sterilisationMethod: MOCK_STRUCTURED.sterilisationMethod,
-  shelfLifeMonths: null,
-};
-
 interface SectionsStoreProviderProps {
+  initial: SectionsStoreInitial;
   children: ReactNode;
 }
 
-/** Client-only mock store so edits survive navigation between sections in the static build. */
-export const SectionsStoreProvider = ({ children }: SectionsStoreProviderProps) => {
-  const [fields, setFields] = useState<FieldMap>(initialFields);
-  const [complete, setCompleteMap] = useState<CompleteMap>(initialComplete);
-  const [structured, setStructuredState] = useState<StructuredValues>(initialStructured);
+/**
+ * Client copy of the document's section content, seeded from the server. It keeps edits alive while
+ * moving between sections (the layout persists); autosave and Mark Complete write them back to the database.
+ */
+export const SectionsStoreProvider = ({ initial, children }: SectionsStoreProviderProps) => {
+  const [fields, setFields] = useState<FieldMap>(initial.fields);
+  const [complete, setCompleteMap] = useState<CompleteMap>(() =>
+    Object.fromEntries(initial.completeKeys.map((key) => [key, true])),
+  );
+  const [structured, setStructuredState] = useState<StructuredValues>(initial.structured);
 
   const value: SectionsStore = {
     fields,
     complete,
     structured,
-    setField: (section, field, next) =>
-      setFields((prev) => ({ ...prev, [section]: { ...prev[section], [field]: next } })),
+    setField: (section, field, next) => setFields((prev) => ({ ...prev, [section]: { ...prev[section], [field]: next } })),
     setComplete: (section, next) => setCompleteMap((prev) => ({ ...prev, [section]: next })),
     setStructured: (patch) => setStructuredState((prev) => ({ ...prev, ...patch })),
   };

@@ -3,25 +3,28 @@ import Link from "next/link";
 
 import { Button } from "@/components/ui/button";
 import { LICENCE_TYPE_META } from "@/features/ifu-wizard/constants";
-import type { IfuDocument } from "@/features/ifu-wizard/types";
+import type { LicencePreviewInfo } from "../types";
 
 interface ManufacturerLicencePreviewProps {
-  document: IfuDocument;
+  documentId: string;
+  info: LicencePreviewInfo;
 }
 
 /** Read-only preview of the auto-generated licence section (REQUIREMENTS §7, row 14). */
-export const ManufacturerLicencePreview = ({ document }: ManufacturerLicencePreviewProps) => {
+export const ManufacturerLicencePreview = ({ documentId, info }: ManufacturerLicencePreviewProps) => {
   const rows = [
-    { label: "Manufacturer", value: document.manufacturerName },
+    { label: "Manufacturer", value: info.manufacturerName },
     {
       label: "Address",
-      value: `${document.manufacturerAddress}, ${document.manufacturerState} ${document.manufacturerPin}, ${document.manufacturerCountry}`,
+      value: [info.manufacturerAddress, [info.manufacturerState, info.manufacturerPin].filter(Boolean).join(" "), info.manufacturerCountry]
+        .filter(Boolean)
+        .join(", "),
     },
-    { label: LICENCE_TYPE_META[document.licenceType].numberLabel, value: document.licenceNumber || "Not provided" },
-    ...(document.manufacturerType === "IMPORTER"
-      ? [{ label: "Importer", value: `${document.importerName}, ${document.importerAddress}` }]
+    { label: LICENCE_TYPE_META[info.licenceType].numberLabel, value: info.licenceNumber || "Not provided" },
+    ...(info.manufacturerType === "IMPORTER"
+      ? [{ label: "Importer", value: `${info.importerName}, ${info.importerAddress}` }]
       : []),
-    { label: "Customer care", value: [document.customerCarePhone, document.customerCareEmail].filter(Boolean).join(" · ") },
+    { label: "Customer care", value: [info.customerCarePhone, info.customerCareEmail].filter(Boolean).join(" · ") },
   ];
 
   return (
@@ -31,7 +34,7 @@ export const ManufacturerLicencePreview = ({ document }: ManufacturerLicencePrev
           <Building2 aria-hidden className="size-4 text-primary" /> Generated from Step 1
         </span>
         <Button asChild variant="outline" size="sm">
-          <Link href={`/ifu/${document.id}/basic-info`}>
+          <Link href={`/ifu/${documentId}/basic-info`}>
             <Pencil /> Edit in Step 1
           </Link>
         </Button>

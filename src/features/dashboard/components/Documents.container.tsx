@@ -1,30 +1,27 @@
 "use client";
 
-import type { IfuDocumentSummary } from "@/features/ifu-wizard/types";
-
+import type { DocumentPage } from "../types";
 import { PAGE_SIZE } from "../constants";
-import { filterDocuments } from "../utils";
-import { useDocumentFilters, useDocumentList } from "./Documents.hooks";
+import { useDeleteDocument, useDocumentFilters } from "./Documents.hooks";
 import { DocumentsPresentation } from "./Documents.presentation";
 
 interface DocumentsContainerProps {
-  initialDocuments: IfuDocumentSummary[];
+  data: DocumentPage;
+  now: string;
 }
 
-export const DocumentsContainer = ({ initialDocuments }: DocumentsContainerProps) => {
-  const { documents, duplicate, remove } = useDocumentList(initialDocuments);
+export const DocumentsContainer = ({ data, now }: DocumentsContainerProps) => {
   const filterState = useDocumentFilters();
-  const filtered = filterDocuments(documents, filterState.filters);
-  const pageCount = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
-  const page = Math.min(filterState.filters.page, pageCount);
-  const visible = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+  const { remove, isDeleting } = useDeleteDocument();
 
   return (
     <DocumentsPresentation
-      documents={visible}
-      totalCount={filtered.length}
-      page={page}
-      pageCount={pageCount}
+      documents={data.documents}
+      now={now}
+      isPending={filterState.isPending || isDeleting}
+      totalCount={data.totalCount}
+      page={data.page}
+      pageCount={data.pageCount}
       pageSize={PAGE_SIZE}
       search={filterState.search}
       status={filterState.filters.status}
@@ -35,7 +32,6 @@ export const DocumentsContainer = ({ initialDocuments }: DocumentsContainerProps
       onRiskChange={filterState.onRiskChange}
       onPageChange={filterState.onPageChange}
       onClearFilters={filterState.clearFilters}
-      onDuplicate={duplicate}
       onDelete={remove}
     />
   );

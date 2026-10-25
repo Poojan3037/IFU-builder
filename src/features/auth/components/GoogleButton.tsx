@@ -21,7 +21,7 @@ export const GoogleButton = ({
   const onClick = () =>
     startTransition(async () => {
       const result = await signInGoogleAction(next);
-      if (result && !result.success) toast.error(result.error);
+      if (result && !result.success) toast.error(result.error.message);
     });
 
   return (

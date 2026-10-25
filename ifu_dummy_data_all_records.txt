@@ -1,0 +1,430 @@
+SMART IFU BUILDER - DUMMY TEST DATA (4 records)
+All values are fictional. Not for real submission.
+
+==============================================================================
+RECORD 1 OF 4: Cortical Bone Screw
+Dummy test data 1 of 4 - Implant - Class C - Indian manufacturer - 11 sections
+==============================================================================
+
+
+### STEP 1 - BASIC INFO
+
+
+--- Device ---
+Device name: Cortical Bone Screw
+Brand / trade name: OrthoFix
+Model / catalogue number: OF-CS-35
+Brief description: Sterile, single-use titanium cortical bone screw for internal fixation of fractures in long bones. Supplied non-cannulated in 3.5 mm diameter with lengths from 10 to 60 mm.
+
+--- Manufacturer ---
+Manufacturer type: Indian manufacturer
+Manufacturer name: OrthoFix Medical Devices Pvt. Ltd.
+Manufacturer address: Plot 42, GIDC Makarpura, Industrial Estate, Makarpura, Vadodara
+State / UT: Gujarat
+PIN code: 390010
+
+--- Licence ---
+Licence type: Manufacturing licence (MD-5 / MD-9)
+Licence number: MFG/MD/2025/000418
+
+--- Contact & document ---
+Customer care phone: +91 98765 43210
+Customer care email: care@orthofix.in
+Document version: v1.0
+Date of issue: 25-10-2026 (auto-filled)
+
+### STEP 2 - CATEGORY & RISK
+
+Device category: Implant
+Supplied sterile?: Yes
+Cleaned / reprocessed and reused?: No
+Active (powered) device?: No
+Has a measuring function?: No
+For lay / home users?: No
+Risk classification: Class C
+(Expect on the right panel: implant-specific sections (Sterilisation, Implant Card) and sterile-supply warnings.)
+
+### STEP 3 - DOCUMENT SECTIONS (11)
+
+
+--- 3.1  Device Description ---
+Description: Sterile, single-use titanium cortical bone screw for internal fixation of fractures in long bones. Supplied non-cannulated in 3.5 mm diameter with lengths from 10 to 60 mm.
+Components & accessories: - 1 x cortical bone screw, 3.5 mm, sterile packed (single unit per pack)
+    - Lengths: 10, 12, 14, 16, 18, 20, 24, 30, 40, 50, 60 mm
+    - Instruments sold separately: 2.5 mm drill bit, 3.5 mm tap, hexagonal screwdriver, depth gauge
+Materials: Titanium alloy Ti-6Al-4V ELI (ISO 5832-3)
+
+--- 3.2  Intended Use / Intended Purpose ---
+Intended use: The device is intended for internal fixation of fractures and osteotomies of long bones, including the tibia, femur, humerus, radius and ulna, in conjunction with bone plates or as a standalone lag screw.
+Intended user: Orthopaedic surgeons trained in internal fracture fixation, operating in a sterile surgical environment such as an operating theatre.
+Intended patient population: Skeletally mature adult patients with fractures requiring internal fixation, with adequate bone quality and no active infection at the surgical site.
+
+--- 3.3  Indications & Contraindications ---
+Indications for use: - Fixation of diaphyseal and metaphyseal fractures of long bones
+    - Arthrodesis
+    - Osteotomy fixation
+    - Fixation of bone fragments and grafts
+Contraindications: - Active or suspected infection at the surgical site
+    - Known hypersensitivity to titanium or titanium alloy
+    - Insufficient bone quantity or quality to support the implant
+    - Patients unwilling or unable to follow post-operative care instructions
+
+--- 3.4  Warnings & Precautions ---
+Warnings: Do not use if the package is damaged or the sterile barrier is breached. For single use only. Do not reuse. Do not resterilise. Reuse may cause infection, implant failure or patient injury.
+Precautions: Select the correct screw length and diameter using the depth gauge. Avoid over-tightening, which can strip the bone thread. Use only compatible instruments. Do not bend or notch the screw.
+Residual risks: Infection, loosening, screw breakage, delayed union or non-union, soft tissue irritation, and the need for revision surgery.
+
+--- 3.5  Instructions for Use (Directions) ---
+Preparation: Before use, inspect the package for damage and check the expiry date. Open the package using aseptic technique and verify the product code and lot number against the label.
+Step-by-step use: 1. Expose the fracture site and reduce the fracture.
+    2. Drill a 2.5 mm pilot hole through both cortices.
+    3. Measure the required screw length with the depth gauge.
+    4. Tap the hole with the 3.5 mm tap.
+    5. Insert the screw with the hexagonal screwdriver until firmly seated.
+    6. Confirm position and fixation under imaging.
+After use: Record the lot number in the patient file and complete the implant card. Dispose of unused opened screws as bio-medical waste.
+
+--- 3.6  Sterilisation Information ---
+Sterility statement: Supplied STERILE. Sterile unless the package is opened or damaged. Do not resterilise.
+Method: Ethylene oxide (or Gamma irradiation)
+
+--- 3.7  Implant Card & Patient Information ---
+Patient information: This implant is made of titanium alloy and is intended to remain in the body to support bone healing. Follow your surgeon's advice on activity and follow-up visits. Report persistent pain, swelling, redness, fever or loosening to your doctor immediately. Carry your implant card and show it to healthcare staff.
+Implant card details: Device name: Cortical Bone Screw (OrthoFix OF-CS-35); lot number; implant date; hospital name and surgeon; manufacturer: OrthoFix Medical Devices Pvt. Ltd., Vadodara, Gujarat.
+MRI safety: MR Conditional. A patient with this device can be scanned safely in an MR system with a static magnetic field of 1.5 T or 3 T. Expected device lifetime: 10 years or the life of the bone healing period.
+
+--- 3.8  Storage & Handling Conditions ---
+Handling notes: Store in the original sealed package in a clean, dry place. Keep away from moisture and do not freeze. Handle with care to avoid damaging the sterile barrier.
+Min / Max temperature: 5 C / 40 C
+Max humidity: 70 % RH
+Light-sensitive: Off
+Shelf life: 60 months
+
+--- 3.9  Disposal Instructions ---
+Disposal: Dispose of used or expired devices and packaging as bio-medical waste in accordance with the Bio-Medical Waste Management Rules, 2016. Explanted devices must be handled as contaminated waste.
+
+--- 3.10  Manufacturer, Importer & Licence ---
+Status: Auto-completed from Step 1 (shows green tick)
+
+--- 3.11  Adverse Event Reporting ---
+Reporting route: Report any serious incident to the manufacturer at care@orthofix.in or +91 98765 43210, and to MvPI via the Materiovigilance Programme of India (www.ipc.gov.in).
+
+
+==============================================================================
+RECORD 2 OF 4: Reusable Laparoscopic Dissector
+Dummy test data 2 of 4 - Reusable Instrument - Class B - Indian manufacturer - reprocessing flow
+==============================================================================
+
+
+### STEP 1 - BASIC INFO
+
+
+--- Device ---
+Device name: Reusable Laparoscopic Dissector
+Brand / trade name: SurgiEdge
+Model / catalogue number: SE-LD-5MM
+Brief description: Reusable 5 mm stainless steel Maryland dissecting forceps with insulated shaft and detachable handle, for grasping and dissecting tissue in minimally invasive surgery. Supplied non-sterile; clean and sterilise before each use.
+
+--- Manufacturer ---
+Manufacturer type: Indian manufacturer
+Manufacturer name: SurgiEdge Instruments Pvt. Ltd.
+Manufacturer address: Survey No. 118, Phase II, GIDC Vatva, Ahmedabad
+State / UT: Gujarat
+PIN code: 382445
+
+--- Licence ---
+Licence type: Manufacturing licence (MD-5 / MD-9)
+Licence number: MFG/MD/2024/000762
+
+--- Contact & document ---
+Customer care phone: +91 79 4000 1122
+Customer care email: support@surgiedge.in
+Document version: v2.0
+Date of issue: 25-10-2026 (auto-filled)
+
+### STEP 2 - CATEGORY & RISK
+
+Device category: Reusable Instrument
+Supplied sterile?: No
+Cleaned / reprocessed and reused?: Yes
+Active (powered) device?: No
+Has a measuring function?: No
+For lay / home users?: No
+Risk classification: Class B
+(Expect on the right panel: cleaning / disinfection / reprocessing content, and the sterile-supply warnings should NOT appear.)
+
+### STEP 3 - DOCUMENT SECTIONS (CORE 9 + REPROCESSING)
+
+(Section labels for the reprocessing section may differ in your app; fill whichever section(s) your rules add for reusable devices.)
+
+--- 3.1  Device Description ---
+Description: Reusable 5 mm stainless steel Maryland dissecting forceps with insulated shaft and detachable handle, for grasping and dissecting tissue in minimally invasive surgery. Supplied non-sterile.
+Components & accessories: - 1 x handle (ratchet-free)
+    - 1 x insulated outer shaft, 330 mm
+    - 1 x Maryland jaw insert
+    - 1 x cleaning brush, 2.5 mm
+Materials: Stainless steel AISI 316L (ISO 7153-1); medical-grade PEEK insulation; silicone seal
+
+--- 3.2  Intended Use / Intended Purpose ---
+Intended use: Grasping, dissecting and manipulating soft tissue during laparoscopic procedures through a 5 mm trocar.
+Intended user: Surgeons and trained operating theatre staff; reprocessing by trained CSSD personnel.
+Intended patient population: Adult and paediatric patients undergoing laparoscopic surgery, as judged by the operating surgeon.
+
+--- 3.3  Indications & Contraindications ---
+Indications for use: - General laparoscopic dissection
+    - Tissue grasping and retraction of small structures
+    - Blunt dissection in cholecystectomy and appendicectomy
+Contraindications: None known
+
+--- 3.4  Warnings & Precautions ---
+Warnings: Not supplied sterile. Clean and sterilise before first use and after every use. Do not use a damaged, bent or corroded instrument. Do not use with monopolar energy if the insulation is cracked.
+Precautions: Inspect jaws and insulation under good light before each use. Do not use excessive force. Do not exceed 200 reprocessing cycles.
+Residual risks: Tissue injury, thermal injury from insulation failure, cross-infection from inadequate reprocessing, instrument fracture.
+
+--- 3.5  Instructions for Use (Directions) ---
+Preparation: Disassemble the instrument into handle, shaft and jaw insert. Clean and sterilise as described in the reprocessing section. Inspect and test movement before use.
+Step-by-step use: 1. Assemble the handle, shaft and jaw insert until the lock clicks.
+    2. Insert through a 5 mm trocar under vision.
+    3. Open and close the jaws to grasp or dissect tissue.
+    4. Withdraw the instrument under vision.
+After use: Wipe gross soil at point of use, keep moist, and send to CSSD for reprocessing within 2 hours.
+
+--- 3.6  Cleaning, Disinfection & Reprocessing ---
+Point-of-use treatment: Wipe visible soil with a damp lint-free cloth. Flush the lumen with sterile water. Do not let soil dry.
+Manual cleaning: Disassemble. Soak 10 minutes in enzymatic detergent (as per manufacturer's dilution). Brush all surfaces and flush the shaft with the supplied brush. Rinse 1 minute with purified water.
+Automated cleaning: Washer-disinfector, alkaline detergent, thermal disinfection at 90 C for 5 minutes. Dry completely.
+Maximum reprocessing cycles: 200 cycles
+
+--- 3.7  Sterilisation Information ---
+Sterility statement: Supplied NON-STERILE. Must be sterilised before every use.
+Method: Steam (autoclave): pre-vacuum, 134 C for 5 minutes, drying 20 minutes
+
+--- 3.8  Storage & Handling Conditions ---
+Handling notes: Store dry in the instrument tray. Do not stack heavy items on the instrument. Keep jaws protected.
+Min / Max temperature: 0 C / 45 C
+Max humidity: 80 % RH
+Light-sensitive: Off
+Shelf life: 60 months
+
+--- 3.9  Disposal Instructions ---
+Disposal: At end of life, decontaminate and dispose of as bio-medical waste under the Bio-Medical Waste Management Rules, 2016. Metal parts may be sent for recycling after decontamination.
+
+--- 3.10  Manufacturer, Importer & Licence ---
+Status: Auto-completed from Step 1
+
+--- 3.11  Adverse Event Reporting ---
+Reporting route: Report any serious incident to the manufacturer at support@surgiedge.in or +91 79 4000 1122, and to MvPI via the Materiovigilance Programme of India (www.ipc.gov.in).
+
+
+==============================================================================
+RECORD 3 OF 4: CardioScan ECG Analyser
+Dummy test data 3 of 4 - Software (SaMD) - Class C - Indian manufacturer - active + measuring
+==============================================================================
+
+
+### STEP 1 - BASIC INFO
+
+
+--- Device ---
+Device name: CardioScan ECG Analyser
+Brand / trade name: HeartLogic
+Model / catalogue number: CS-ECG-2.4
+Brief description: Standalone software that analyses resting 12-lead ECG recordings, calculates heart rate and intervals, and flags rhythm abnormalities to support clinician diagnosis.
+
+--- Manufacturer ---
+Manufacturer type: Indian manufacturer
+Manufacturer name: HeartLogic Health Technologies Pvt. Ltd.
+Manufacturer address: 4th Floor, Tech Park Tower B, Whitefield Main Road, Bengaluru
+State / UT: Karnataka
+PIN code: 560066
+
+--- Licence ---
+Licence type: Manufacturing licence (MD-5 / MD-9)
+Licence number: MFG/MD/2026/001153
+
+--- Contact & document ---
+Customer care phone: +91 80 4000 5566
+Customer care email: support@heartlogic.in
+Document version: v1.0
+Date of issue: 25-10-2026 (auto-filled)
+
+### STEP 2 - CATEGORY & RISK
+
+Device category: Software (SaMD)
+Supplied sterile?: No
+Cleaned / reprocessed and reused?: No
+Active (powered) device?: Yes
+Has a measuring function?: Yes
+For lay / home users?: No
+Risk classification: Class C
+(Expect on the right panel: software-specific sections and warnings (cybersecurity, system requirements); no sterile or reprocessing content.)
+
+### STEP 3 - DOCUMENT SECTIONS (CORE 9 + SOFTWARE)
+
+(The software section's label may differ in your app; fill whichever section your rules add for SaMD.)
+
+--- 3.1  Device Description ---
+Description: Standalone software that analyses resting 12-lead ECG recordings, calculates heart rate and intervals, and flags rhythm abnormalities to support clinician diagnosis.
+Components & accessories: - Installer package (Windows 64-bit)
+    - Electronic user manual (PDF)
+    - Licence key, valid 36 months
+Materials: Not applicable (software). No patient-contacting materials.
+
+--- 3.2  Intended Use / Intended Purpose ---
+Intended use: To analyse digital resting 12-lead ECG recordings, measure heart rate, PR, QRS and QT intervals, and flag possible arrhythmias for review by a clinician. It does not replace clinical judgement.
+Intended user: Cardiologists, physicians and trained ECG technicians in hospitals and clinics.
+Intended patient population: Adult patients (18 years and above) undergoing resting ECG recording.
+
+--- 3.3  Indications & Contraindications ---
+Indications for use: - Interpretation support for resting 12-lead ECGs
+    - Screening for atrial fibrillation, bradycardia and tachycardia
+    - Measurement of standard ECG intervals
+Contraindications: - Not for ECG recorded during exercise or ambulatory monitoring
+    - Not for paediatric patients
+    - Not for use as the sole basis for diagnosis or treatment
+
+--- 3.4  Warnings & Precautions ---
+Warnings: Software output must be reviewed by a qualified clinician. Poor signal quality, lead misplacement or pacemaker artefacts can cause incorrect results. Do not use if a software integrity check fails.
+Precautions: Install only on supported systems. Keep the operating system and antivirus updated. Restrict access to authorised users.
+Residual risks: False negative or false positive arrhythmia flags; delayed diagnosis if output is relied on without review; data breach if the host system is compromised.
+
+--- 3.5  Instructions for Use (Directions) ---
+Preparation: Confirm that the workstation meets system requirements. Install the software using the supplied installer and activate with the licence key.
+Step-by-step use: 1. Log in with your user credentials.
+    2. Import an ECG recording (DICOM or XML) or connect a supported ECG device.
+    3. Check signal quality indicator is green.
+    4. Click Analyse.
+    5. Review measurements and flags against the waveform.
+    6. Confirm or edit the findings and save the report.
+After use: Log out. Back up reports according to hospital policy.
+
+--- 3.6  Software Information & Cybersecurity ---
+Software version: 2.4.0 (build 2026.10)
+System requirements: Windows 10/11 64-bit, 8 GB RAM, 4-core CPU, 5 GB free disk, 1920x1080 display
+Cybersecurity: Data encrypted at rest (AES-256) and in transit (TLS 1.2+). Role-based access. Install security updates when notified. Report suspected vulnerabilities to support@heartlogic.in.
+Updates & support: Security patches released at least every 6 months; support for each major version for 5 years.
+
+--- 3.7  Storage & Handling Conditions ---
+Handling notes: Installation media (USB) to be stored in a dry place away from magnetic fields. Do not store on shared or unsecured drives.
+Min / Max temperature: 10 C / 30 C
+Max humidity: 60 % RH
+Light-sensitive: Off
+Shelf life: 36 months (licence validity)
+
+--- 3.8  Disposal Instructions ---
+Disposal: Uninstall the software and securely erase patient data before decommissioning the workstation. Dispose of installation media as e-waste under the E-Waste (Management) Rules, 2022.
+
+--- 3.9  Manufacturer, Importer & Licence ---
+Status: Auto-completed from Step 1
+
+--- 3.10  Adverse Event Reporting ---
+Reporting route: Report any serious incident or incorrect output to the manufacturer at support@heartlogic.in or +91 80 4000 5566, and to MvPI via the Materiovigilance Programme of India (www.ipc.gov.in).
+
+
+==============================================================================
+RECORD 4 OF 4: SafeGlide Pen Needle 31G x 5 mm
+Dummy test data 4 of 4 - Single-use - Class B - Importer - lay / home users
+==============================================================================
+
+
+### STEP 1 - BASIC INFO
+
+
+--- Device ---
+Device name: SafeGlide Pen Needle 31G x 5 mm
+Brand / trade name: SafeGlide
+Model / catalogue number: SG-PN-31-5
+Brief description: Sterile, single-use pen needle, 31G x 5 mm, with a triple-bevelled tip for subcutaneous injection using compatible insulin pen injectors.
+
+--- Manufacturer ---
+Manufacturer type: Importer
+Manufacturer name: MediSupply Healthcare India Pvt. Ltd.
+Manufacturer address: Unit 12, Andheri Industrial Estate, Veera Desai Road, Andheri West, Mumbai
+State / UT: Maharashtra
+PIN code: 400053
+Foreign manufacturer (if asked): NovaDerm Medical GmbH, Industriestrasse 21, 22525 Hamburg, Germany
+
+--- Licence ---
+Licence type: Import licence (MD-15)
+Licence number: IMP/MD/2026/003217
+
+--- Contact & document ---
+Customer care phone: +91 22 4000 7788
+Customer care email: care@medisupply.in
+Document version: v1.0
+Date of issue: 25-10-2026 (auto-filled)
+
+### STEP 2 - CATEGORY & RISK
+
+Device category: Single-use
+Supplied sterile?: Yes
+Cleaned / reprocessed and reused?: No
+Active (powered) device?: No
+Has a measuring function?: No
+For lay / home users?: Yes
+Risk classification: Class B
+(Expect on the right panel: sterile-supply and lay-user / home-use sections and warnings; importer licence checks in compliance.)
+
+### STEP 3 - DOCUMENT SECTIONS (CORE 9 + STERILISATION + LAY USER)
+
+(The lay-user section's label may differ in your app (e.g. Patient / Home-Use Information).)
+
+--- 3.1  Device Description ---
+Description: Sterile, single-use pen needle, 31G x 5 mm, with a triple-bevelled tip for subcutaneous injection using compatible insulin pen injectors.
+Components & accessories: - Needle cannula with hub
+    - Outer protective cap
+    - Inner needle shield
+    - Peel-off paper seal
+    Pack of 100 needles.
+Materials: Stainless steel cannula (AISI 304); polypropylene hub and caps; silicone lubricant coating
+
+--- 3.2  Intended Use / Intended Purpose ---
+Intended use: For subcutaneous injection of insulin and other injectable medicines when used with compatible pen injectors.
+Intended user: Patients and caregivers after training by a healthcare professional; also healthcare professionals.
+Intended patient population: Adults and children with diabetes or other conditions requiring pen injections.
+
+--- 3.3  Indications & Contraindications ---
+Indications for use: - Subcutaneous administration of insulin
+    - Subcutaneous administration of other pen-injectable medicines
+Contraindications: - Known allergy to stainless steel or lubricant
+    - Not for intravenous or intramuscular injection
+
+--- 3.4  Warnings & Precautions ---
+Warnings: Do not use if the package is damaged or the seal is broken. For single use only. Do not reuse. Do not resterilise. Reuse may cause infection, needle breakage or inaccurate dosing.
+Precautions: Use a new needle for every injection. Rotate injection sites. Dispose of used needles immediately in a sharps container.
+Residual risks: Needle-stick injury, bleeding or bruising at the injection site, infection, needle breakage.
+
+--- 3.5  Instructions for Use (Directions) ---
+Preparation: Wash hands. Check the package is intact and in date. Peel off the paper seal.
+Step-by-step use: 1. Screw the needle straight onto the pen injector.
+    2. Remove the outer cap and keep it. Remove the inner shield and discard it.
+    3. Perform a safety (priming) test as per the pen's instructions.
+    4. Insert the needle into the skin at 90 degrees.
+    5. Press the button fully and hold for 10 seconds.
+    6. Withdraw the needle.
+After use: Replace the outer cap carefully, unscrew the needle and place it in a sharps container.
+
+--- 3.6  Sterilisation Information ---
+Sterility statement: Supplied STERILE. Sterile unless the package is opened or damaged. Do not resterilise.
+Method: Ethylene oxide
+
+--- 3.7  Patient / Home-Use Information ---
+Information for lay users: Use only after training from your doctor or nurse. Never share needles or pens. If you see blood at the injection site, press gently with clean cotton. Contact your doctor if you notice redness, swelling or pain that does not settle.
+When to seek help: Seek medical help if a needle breaks off under the skin or you have signs of severe infection.
+
+--- 3.8  Storage & Handling Conditions ---
+Handling notes: Store in the original pack in a cool, dry place. Keep out of reach of children. Do not freeze.
+Min / Max temperature: 5 C / 30 C
+Max humidity: 75 % RH
+Light-sensitive: Off
+Shelf life: 60 months
+
+--- 3.9  Disposal Instructions ---
+Disposal: Place used needles in a puncture-proof sharps container. Dispose of the container as bio-medical waste per the Bio-Medical Waste Management Rules, 2016. Never throw loose needles in household waste.
+
+--- 3.10  Manufacturer, Importer & Licence ---
+Status: Auto-completed from Step 1
+
+--- 3.11  Adverse Event Reporting ---
+Reporting route: Report any serious incident to the importer at care@medisupply.in or +91 22 4000 7788, and to MvPI via the Materiovigilance Programme of India (www.ipc.gov.in).
+

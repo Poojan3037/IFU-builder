@@ -10,7 +10,7 @@ interface AppHeaderProps {
 
 /** Global header for authenticated screens (FR-GLB-01). */
 export const AppHeader = ({ user }: AppHeaderProps) => (
-  <header className="glass sticky top-0 z-40 border-x-0 border-t-0">
+  <header className="sticky top-0 z-40 border-b border-glass-border bg-background">
     <div className="mx-auto flex h-14 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6">
       <Logo href="/dashboard" compact />
       <div className="flex items-center gap-1.5">

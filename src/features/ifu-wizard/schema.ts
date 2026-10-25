@@ -1,11 +1,16 @@
 import { z } from "zod";
 
+import { INDIAN_STATES } from "./constants";
+
 const PIN_REGEX = /^[1-9][0-9]{5}$/;
 const VERSION_REGEX = /^v\d+\.\d+$/;
 /** Indian mobile or landline (STD code + number), 10 digits without the +91 / leading 0. */
 const PHONE_DIGITS_REGEX = /^[1-9]\d{9}$/;
 
 export const normalisePhone = (value: string) => value.replace(/[\s-]/g, "").replace(/^(\+?91)/, "").replace(/^0/, "");
+
+const STATE_NAMES: readonly string[] = INDIAN_STATES;
+const stateField = z.string().max(60).refine((v) => v === "" || STATE_NAMES.includes(v), "Choose a state or union territory");
 
 const MANUFACTURER_TYPES = ["INDIAN_MANUFACTURER", "IMPORTER"] as const;
 const LICENCE_TYPES = ["MANUFACTURING", "LOAN", "IMPORT", "REGISTRATION"] as const;
@@ -20,19 +25,21 @@ const basicInfoShape = {
   manufacturerType: z.enum(MANUFACTURER_TYPES),
   manufacturerName: z.string().trim().max(160),
   manufacturerAddress: z.string().trim().max(400),
-  manufacturerState: z.string(),
-  manufacturerPin: z.string().trim(),
+  manufacturerState: stateField,
+  manufacturerPin: z.string().trim().max(10),
   manufacturerCountry: z.string().trim().max(80),
   licenceType: z.enum(LICENCE_TYPES),
   licenceNumber: z.string().trim().max(60, "Keep the licence number under 60 characters"),
   importerName: z.string().trim().max(160),
   importerAddress: z.string().trim().max(400),
-  importerState: z.string(),
-  importerPin: z.string().trim(),
-  customerCarePhone: z.string().trim(),
-  customerCareEmail: z.string().trim(),
-  version: z.string().trim(),
-  issueDate: z.date({ error: "Pick the date of issue" }),
+  importerState: stateField,
+  importerPin: z.string().trim().max(10),
+  customerCarePhone: z.string().trim().max(20),
+  customerCareEmail: z.string().trim().max(254),
+  version: z.string().trim().max(20),
+  issueDate: z
+    .date({ error: "Pick the date of issue" })
+    .refine((d) => d.getFullYear() >= 2000 && d.getFullYear() <= 2100, "Pick a realistic date of issue"),
   description: z.string().trim().max(500, "Keep the description under 500 characters"),
 };
 
@@ -105,3 +112,32 @@ export const categoryRiskSchema = z
   });
 
 export type CategoryRiskInput = z.infer<typeof categoryRiskSchema>;
+
+/** Draft saves keep whatever is answered so far; `continue` requires everything (FR-S2-08). */
+export const categoryRiskDraftSchema = z.object({
+  category: z.enum(DEVICE_CATEGORIES).nullable(),
+  isSterile: z.boolean().nullable(),
+  isReusable: z.boolean().nullable(),
+  isActive: z.boolean().nullable(),
+  hasMeasuringFn: z.boolean().nullable(),
+  isLayUser: z.boolean().nullable(),
+  riskClass: z.enum(RISK_CLASSES).nullable(),
+});
+
+/** Wire format for `saveCategoryRiskAction`: values are re-validated against the mode's schema on the server. */
+export const saveCategoryRiskSchema = z.object({
+  documentId: z.string().min(1).max(64),
+  mode: z.enum(["draft", "continue"]),
+  values: z.unknown(),
+});
+
+export type SaveCategoryRiskMode = z.infer<typeof saveCategoryRiskSchema>["mode"];
+
+/** Wire format for `saveBasicInfoAction`: values are re-validated against the mode's schema on the server. */
+export const saveBasicInfoSchema = z.object({
+  documentId: z.string().min(1).max(64),
+  mode: z.enum(["draft", "continue", "autosave"]),
+  values: z.unknown(),
+});
+
+export type SaveBasicInfoMode = z.infer<typeof saveBasicInfoSchema>["mode"];

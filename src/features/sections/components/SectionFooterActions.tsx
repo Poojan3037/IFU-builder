@@ -1,8 +1,7 @@
 "use client";
 
 import { AnimatePresence, motion } from "motion/react";
-import { ArrowLeft, Check, LogOut } from "lucide-react";
-import Link from "next/link";
+import { ArrowLeft, Check, Loader2, LogOut } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 
@@ -11,29 +10,22 @@ interface SectionFooterActionsProps {
   exitHref: string;
   completeLabel: string;
   isBursting: boolean;
+  /** A save or navigation is in flight. */
+  isBusy: boolean;
+  onNavigate: (href: string) => void;
   onComplete: () => void;
 }
 
 const BURST_RAYS = Array.from({ length: 8 }, (_, i) => i * 45);
 
-export const SectionFooterActions = ({ previousHref, exitHref, completeLabel, isBursting, onComplete }: SectionFooterActionsProps) => (
+export const SectionFooterActions = ({ previousHref, exitHref, completeLabel, isBursting, isBusy, onNavigate, onComplete }: SectionFooterActionsProps) => (
   <div className="flex flex-col-reverse gap-3 border-t pt-5 sm:flex-row sm:items-center sm:justify-between">
     <div className="flex gap-2">
-      {previousHref ? (
-        <Button asChild variant="ghost" className="h-9">
-          <Link href={previousHref}>
-            <ArrowLeft /> Previous Section
-          </Link>
-        </Button>
-      ) : (
-        <Button variant="ghost" className="h-9" disabled>
-          <ArrowLeft /> Previous Section
-        </Button>
-      )}
-      <Button asChild variant="outline" className="h-9">
-        <Link href={exitHref}>
-          <LogOut /> Save &amp; Exit
-        </Link>
+      <Button variant="ghost" className="h-9" disabled={!previousHref || isBusy} onClick={() => previousHref && onNavigate(previousHref)}>
+        <ArrowLeft /> Previous Section
+      </Button>
+      <Button variant="outline" className="h-9" disabled={isBusy} onClick={() => onNavigate(exitHref)}>
+        <LogOut /> Save &amp; Exit
       </Button>
     </div>
     <div className="relative">
@@ -60,7 +52,7 @@ export const SectionFooterActions = ({ previousHref, exitHref, completeLabel, is
       <motion.div animate={isBursting ? { scale: [1, 1.06, 1] } : { scale: 1 }} transition={{ duration: 0.35 }}>
         <Button
           onClick={onComplete}
-          disabled={isBursting}
+          disabled={isBursting || isBusy}
           className="h-10 w-full px-4 shadow-md shadow-primary/20 sm:w-auto disabled:opacity-100"
         >
           <AnimatePresence mode="wait" initial={false}>
@@ -71,8 +63,8 @@ export const SectionFooterActions = ({ previousHref, exitHref, completeLabel, is
               exit={{ opacity: 0, y: -6 }}
               className="inline-flex items-center gap-1.5"
             >
-              <Check className="size-4" strokeWidth={isBursting ? 3 : 2} />
-              {isBursting ? "Marked complete" : completeLabel}
+              {isBusy && !isBursting ? <Loader2 className="size-4 animate-spin" /> : <Check className="size-4" strokeWidth={isBursting ? 3 : 2} />}
+              {isBursting ? "Marked complete" : isBusy ? "Saving…" : completeLabel}
             </motion.span>
           </AnimatePresence>
         </Button>

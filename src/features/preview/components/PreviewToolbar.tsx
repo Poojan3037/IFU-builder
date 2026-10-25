@@ -38,7 +38,7 @@ export const PreviewToolbar = ({
   onZoomOut,
   onResetZoom,
 }: PreviewToolbarProps) => (
-  <div className="glass sticky top-14 z-30 border-x-0 border-t-0">
+  <div className="sticky top-14 z-30 border-b border-glass-border bg-background">
     <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 px-4 py-2.5 sm:px-6">
       <div className="flex items-center gap-2">
         <Button asChild variant="ghost" size="sm" className="-ml-2 text-muted-foreground">

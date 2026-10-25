@@ -10,4 +10,5 @@ export const CATEGORY_CONTEXT: Record<DeviceCategory, string> = {
   OTHER: "medical",
 };
 
-export const SCAN_DURATION_MS = 1400;
+/** The check takes well under a second; the scanning state is shown at least this long so it reads as a result, not a flash. */
+export const MIN_SCAN_DISPLAY_MS = 700;
